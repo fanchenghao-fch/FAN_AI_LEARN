@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 闯关学习 · 扩展功能与社交</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* ============================================================
+   CSS VARIABLES
+   ============================================================ */
+:root {
+  --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1D4ED8;
+  --yellow: #FBBF24; --yellow-light: #FDE68A; --yellow-dark: #F59E0B;
+  --red: #EF4444; --red-light: #FCA5A5; --red-dark: #DC2626;
+  --green: #10B981; --green-light: #6EE7B7; --green-dark: #059669;
+  --orange: #F97316; --orange-light: #FDBA74;
+  --purple: #8B5CF6; --pink: #EC4899;
+  --black: #1E1E1E; --dark: #374151; --gray: #9CA3AF; --gray-light: #E5E7EB;
+  --white: #FFFBEB; --paper: #FFFDF5; --card-bg: #FFFFFF;
+  --border-w: 3px; --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px; --radius-xl: 28px;
+  --shadow-comic: 4px 4px 0px var(--black);
+  --shadow-comic-sm: 2px 2px 0px var(--black);
+  --font-display: 'ZCOOL QingKe HuangYou', 'ZCOOL KuaiLe', cursive;
+  --font-body: 'Noto Sans SC', sans-serif;
+  --font-comic: 'Luckiest Guy', cursive;
+}
+
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { touch-action: manipulation; scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  font-family: var(--font-body); background: #F0EDE0;
+  background-image: radial-gradient(circle, #D1CBB8 1px, transparent 1px);
+  background-size: 20px 20px; color: var(--black); min-height: 100vh;
+  padding: 20px; position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.008) 2px, rgba(0,0,0,0.008) 4px);
+  pointer-events: none; z-index: 0;
+}
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+
+.page-header { text-align: center; margin-bottom: 28px; position: relative; z-index: 1; }
+.page-header h1 { font-family: var(--font-display); font-size: 2.4rem; color: var(--black); text-shadow: 3px 3px 0px var(--yellow); letter-spacing: 2px; -webkit-text-stroke: 1px var(--black); }
+.page-header .subtitle { font-size: 0.9rem; color: var(--dark); background: var(--yellow-light); display: inline-block; padding: 4px 18px; border-radius: 20px; border: 2px solid var(--black); }
+
+/* ============================================================
+   GRID
+   ============================================================ */
+.prototype-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 20px; max-width: 1280px; margin: 0 auto; position: relative; z-index: 1; }
+@media (max-width: 1280px) { .prototype-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 860px) { .prototype-grid { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   PHONE MOCKUP
+   ============================================================ */
+.phone-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.phone-label { font-family: var(--font-display); font-size: 0.9rem; color: var(--white); background: var(--black); padding: 5px 16px; border-radius: 20px; letter-spacing: 1px; border: 2px solid var(--black); box-shadow: var(--shadow-comic-sm); }
+.phone-label .step-num { background: var(--yellow); color: var(--black); border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; margin-right: 4px; font-weight: 900; }
+.phone-frame { width: 375px; height: 700px; background: var(--paper); border: 4px solid var(--black); border-radius: 28px; overflow: hidden; position: relative; box-shadow: 6px 6px 0px var(--black), 0 8px 24px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+.phone-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 24px; background: var(--black); border-radius: 0 0 16px 16px; z-index: 10; }
+.phone-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 32px 16px 16px; position: relative; scrollbar-width: thin; scrollbar-color: var(--gray) transparent; }
+.phone-content::-webkit-scrollbar { width: 4px; }
+.phone-content::-webkit-scrollbar-thumb { background: var(--gray); border-radius: 4px; }
+.status-bar-spacer { height: 16px; }
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+.comic-card { background: var(--card-bg); border: var(--border-w) solid var(--black); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-comic); margin-bottom: 12px; }
+.comic-card.dashed { border-style: dashed; }
+
+.comic-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; padding: 10px 20px; border: var(--border-w) solid var(--black); border-radius: var(--radius-xl); cursor: pointer; box-shadow: var(--shadow-comic-sm); transition: all 0.1s ease; letter-spacing: 1px; text-decoration: none; color: var(--black); touch-action: manipulation; min-height: 44px; }
+.comic-btn:active { transform: scale(0.95); }
+.comic-btn.primary { background: var(--blue); color: white; }
+.comic-btn.yellow { background: var(--yellow); }
+.comic-btn.red { background: var(--red); color: white; }
+.comic-btn.green { background: var(--green); color: white; }
+.comic-btn.outline { background: white; }
+.comic-btn.sm { font-size: 0.78rem; padding: 8px 14px; }
+.comic-btn.lg { font-size: 1.1rem; padding: 12px 28px; }
+
+.section-title { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.progress-bar { height: 8px; background: var(--gray-light); border: 2px solid var(--black); border-radius: 8px; overflow: hidden; }
+.progress-bar .fill { height: 100%; border-radius: 6px; }
+.progress-bar .fill.blue { background: var(--blue); }
+.progress-bar .fill.green { background: var(--green); }
+.progress-bar .fill.yellow { background: var(--yellow); }
+.progress-bar .fill.red { background: var(--red); }
+
+.nav-bar { display: flex; justify-content: space-around; padding: 8px 0 0; border-top: 2px solid var(--black); }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.75rem; color: var(--gray); cursor: pointer; }
+.nav-item.active { color: var(--blue); }
+.nav-icon-svg { width: 22px; height: 22px; display: block; margin: 0 auto; }
+
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.top-bar .back-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid var(--black); background: white; cursor: pointer; }
+.top-bar .page-title { font-family: var(--font-display); font-size: 1.1rem; }
+
+.badge-tag { display: inline-block; font-family: var(--font-display); font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; border: 2px solid var(--black); background: white; }
+.badge-tag.hot { background: var(--red); color: white; }
+.badge-tag.new { background: var(--green); color: white; }
+
+/* ============================================================
+   PAGE 1: 发现页
+   ============================================================ */
+.search-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+.search-bar input { flex: 1; padding: 10px 14px; border: var(--border-w) solid var(--black); border-radius: 24px; font-family: var(--font-body); font-size: 0.85rem; outline: none; background: white; box-shadow: var(--shadow-comic-sm); }
+.search-bar input:focus { border-color: var(--blue); }
+
+.cat-scroll { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.cat-scroll::-webkit-scrollbar { display: none; }
+.cat-chip { font-size: 0.75rem; padding: 6px 14px; border-radius: 18px; border: 2px solid var(--black); white-space: nowrap; cursor: pointer; background: white; font-weight: 700; flex-shrink: 0; }
+.cat-chip.active { background: var(--blue); color: white; }
+
+.featured-card { background: white; border: var(--border-w) solid var(--black); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-comic); margin-bottom: 14px; position: relative; overflow: hidden; }
+.featured-card .feat-badge { position: absolute; top: 12px; right: 12px; }
+.featured-card .feat-icon { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; margin-bottom: 8px; background: var(--yellow-light); }
+.featured-card .feat-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 2px; }
+.featured-card .feat-desc { font-size: 0.72rem; color: var(--dark); margin-bottom: 10px; }
+
+.quiz-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.quiz-row-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: var(--shadow-comic-sm); cursor: pointer; transition: all 0.1s; }
+.quiz-row-item:active { transform: scale(0.98); }
+.quiz-row-item .qr-icon { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.85rem; flex-shrink: 0; }
+.quiz-row-item .qr-info { flex: 1; min-width: 0; }
+.quiz-row-item .qr-title { font-weight: 700; font-size: 0.82rem; }
+.quiz-row-item .qr-meta { font-size: 0.68rem; color: var(--gray); }
+.quiz-row-item .qr-stat { font-size: 0.7rem; color: var(--gray); text-align: right; flex-shrink: 0; }
+
+/* ============================================================
+   PAGE 2: 排行榜
+   ============================================================ */
+.rank-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.rank-tab { flex: 1; text-align: center; font-family: var(--font-display); font-size: 0.78rem; padding: 8px 6px; border-radius: 14px; border: 2px solid var(--black); cursor: pointer; background: white; }
+.rank-tab.active { background: var(--black); color: white; }
+
+.rank-podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin-bottom: 16px; height: 130px; }
+.rank-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rank-spot .p-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--black); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.1rem; }
+.rank-spot:nth-child(2) .p-avatar { width: 56px; height: 56px; background: #FEF3C7; }
+.rank-spot:nth-child(1) .p-avatar { width: 44px; height: 44px; background: #F3F4F6; }
+.rank-spot:nth-child(3) .p-avatar { width: 44px; height: 44px; background: #FED7AA; }
+.rank-spot .p-crown { font-size: 1.2rem; }
+.rank-spot .p-name { font-size: 0.65rem; font-weight: 700; }
+.rank-spot .p-score { font-size: 0.6rem; color: var(--gray); }
+
+.rank-list { display: flex; flex-direction: column; gap: 6px; }
+.rank-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: var(--shadow-comic-sm); }
+.rank-item.me { background: var(--yellow-light); }
+.rank-item .r-rank { font-family: var(--font-comic); font-size: 1rem; width: 28px; text-align: center; flex-shrink: 0; }
+.rank-item .r-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; flex-shrink: 0; background: var(--gray-light); }
+.rank-item .r-info { flex: 1; min-width: 0; }
+.rank-item .r-name { font-weight: 700; font-size: 0.8rem; }
+.rank-item .r-meta { font-size: 0.65rem; color: var(--gray); }
+.rank-item .r-score { font-family: var(--font-display); font-size: 0.9rem; flex-shrink: 0; }
+
+/* ============================================================
+   PAGE 3: 每日挑战
+   ============================================================ */
+.daily-hero { text-align: center; padding: 16px; margin-bottom: 14px; background: white; border: var(--border-w) solid var(--black); border-radius: var(--radius-lg); box-shadow: var(--shadow-comic); }
+.daily-hero .day-num { font-family: var(--font-comic); font-size: 2.2rem; color: var(--purple); text-shadow: 2px 2px 0px var(--black); -webkit-text-stroke: 1px var(--black); }
+.daily-hero .day-label { font-size: 0.75rem; font-weight: 700; }
+.daily-hero .day-countdown { font-size: 0.7rem; color: var(--red); margin-top: 4px; }
+
+.daily-question { background: white; border: var(--border-w) solid var(--black); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-comic); }
+.daily-question .dq-domain { font-size: 0.65rem; padding: 2px 10px; border-radius: 10px; border: 1.5px solid var(--black); display: inline-block; margin-bottom: 8px; background: var(--yellow-light); }
+.daily-question .dq-text { font-size: 0.95rem; font-weight: 700; line-height: 1.5; margin-bottom: 6px; }
+.daily-question .dq-hint { font-size: 0.7rem; color: var(--gray); }
+
+.daily-stats { display: flex; gap: 8px; margin-bottom: 12px; }
+.daily-stat { flex: 1; background: white; border: 2px solid var(--black); border-radius: var(--radius-sm); padding: 8px; text-align: center; box-shadow: var(--shadow-comic-sm); }
+.daily-stat .ds-val { font-family: var(--font-display); font-size: 1rem; }
+.daily-stat .ds-label { font-size: 0.62rem; color: var(--gray); }
+
+/* ============================================================
+   PAGE 4: 好友PK对战
+   ============================================================ */
+.pk-invite-card { background: white; border: var(--border-w) solid var(--black); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-comic); margin-bottom: 14px; text-align: center; }
+.pk-invite-card .pk-vs { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; }
+.pk-invite-card .pk-player { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pk-invite-card .pk-player .pk-avatar { width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--black); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.2rem; }
+.pk-invite-card .pk-player .pk-name { font-size: 0.72rem; font-weight: 700; }
+.pk-invite-card .pk-vs-badge { font-family: var(--font-comic); font-size: 1.4rem; color: var(--red); text-shadow: 2px 2px 0px var(--black); -webkit-text-stroke: 1px var(--black); }
+.pk-invite-card .pk-domain { font-size: 0.72rem; color: var(--gray); margin-bottom: 10px; }
+
+.pk-result { background: white; border: var(--border-w) solid var(--black); border-radius: var(--radius-md); padding: 12px; box-shadow: var(--shadow-comic-sm); margin-bottom: 10px; }
+.pk-result .pk-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; text-align: center; margin-bottom: 8px; }
+.pk-result .pk-compare .pk-val { font-family: var(--font-display); font-size: 1.2rem; }
+.pk-result .pk-compare .pk-val.win { color: var(--green); }
+.pk-result .pk-compare .pk-val.lose { color: var(--red); }
+.pk-result .pk-bar-row { display: flex; gap: 4px; align-items: center; margin-bottom: 6px; font-size: 0.68rem; }
+.pk-result .pk-bar-row .pk-bar { flex: 1; height: 14px; border: 2px solid var(--black); border-radius: 7px; overflow: hidden; }
+
+/* ============================================================
+   PAGE 5: 知识输入扩展 (文档上传)
+   ============================================================ */
+.upload-zone { background: white; border: 3px dashed var(--black); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; margin-bottom: 12px; cursor: pointer; transition: all 0.15s; }
+.upload-zone:active { background: var(--yellow-light); }
+.upload-zone .upload-icon { margin-bottom: 8px; }
+.upload-zone .upload-text { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 4px; }
+.upload-zone .upload-hint { font-size: 0.68rem; color: var(--gray); }
+
+.file-list { margin-bottom: 12px; }
+.file-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border: 2px solid var(--black); border-radius: var(--radius-sm); margin-bottom: 6px; box-shadow: var(--shadow-comic-sm); }
+.file-item .file-icon { width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--black); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.7rem; background: var(--yellow-light); flex-shrink: 0; }
+.file-item .file-info { flex: 1; min-width: 0; }
+.file-item .file-name { font-weight: 700; font-size: 0.78rem; }
+.file-item .file-size { font-size: 0.65rem; color: var(--gray); }
+.file-item .file-status { font-size: 0.65rem; color: var(--green); flex-shrink: 0; }
+
+.link-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.link-input-row input { flex: 1; padding: 10px 12px; border: var(--border-w) solid var(--black); border-radius: 12px; font-family: var(--font-body); font-size: 0.78rem; outline: none; box-shadow: var(--shadow-comic-sm); }
+
+/* ============================================================
+   PAGE 6: 知识星球
+   ============================================================ */
+.star-map { position: relative; width: 100%; height: 260px; background: radial-gradient(ellipse at center, #1E293B 0%, #0F172A 100%); border: var(--border-w) solid var(--black); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-comic); }
+.star-map .star-node { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; border: 2px solid rgba(255,255,255,0.6); transition: all 0.15s; font-family: var(--font-display); }
+.star-map .star-node.big { width: 56px; height: 56px; font-size: 0.8rem; background: radial-gradient(circle, #FEF3C7, #FBBF24); box-shadow: 0 0 20px rgba(251,191,36,0.5); }
+.star-map .star-node.medium { width: 42px; height: 42px; font-size: 0.65rem; background: radial-gradient(circle, #BFDBFE, #3B82F6); box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+.star-map .star-node.small { width: 32px; height: 32px; font-size: 0.55rem; background: radial-gradient(circle, #DDD6FE, #8B5CF6); box-shadow: 0 0 8px rgba(139,92,246,0.3); }
+.star-map .star-node.dim { width: 22px; height: 22px; font-size: 0.45rem; background: #475569; opacity: 0.5; }
+.star-map .star-line { position: absolute; height: 1.5px; background: rgba(255,255,255,0.2); transform-origin: left center; pointer-events: none; }
+
+.star-legend { display: flex; gap: 10px; justify-content: center; font-size: 0.62rem; margin-bottom: 10px; }
+.star-legend .sl-item { display: flex; align-items: center; gap: 4px; }
+.star-legend .sl-dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--black); }
+.star-legend .sl-dot.mastered { background: var(--yellow); }
+.star-legend .sl-dot.learning { background: var(--blue); }
+.star-legend .sl-dot.exploring { background: var(--purple); }
+.star-legend .sl-dot.undiscovered { background: #CBD5E1; }
+
+.next-recommend { background: white; border: 2px dashed var(--black); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.72rem; display: flex; align-items: center; gap: 8px; }
+.next-recommend .nr-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--purple); animation: pulse-dot 1.5s ease infinite; flex-shrink: 0; }
+@keyframes pulse-dot { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+@media (max-width: 420px) {
+  .phone-frame { width: 100%; max-width: 375px; height: auto; min-height: 620px; }
+  .phone-content { padding: 28px 12px 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>AI 闯关学习 · 扩展功能与社交</h1>
+  <div class="subtitle">灯灯陪你探索 · 第三批扩展功能 · 一行三列响应式</div>
+</div>
+
+<div class="prototype-grid">
+
+  <!-- ============================================================
+       PAGE 1/6: 发现页
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">1</span>发现页</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Search -->
+        <div class="search-bar">
+          <input type="text" placeholder="搜索闯关、知识领域...">
+          <button class="comic-btn primary sm" style="border-radius:50%;width:42px;height:42px;padding:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
+
+        <!-- Categories -->
+        <div class="cat-scroll">
+          <div class="cat-chip active">全部</div><div class="cat-chip">编程开发</div><div class="cat-chip">人文历史</div><div class="cat-chip">自然科学</div><div class="cat-chip">语言学习</div><div class="cat-chip">考公考研</div><div class="cat-chip">兴趣爱好</div>
+        </div>
+
+        <!-- Featured -->
+        <div class="featured-card">
+          <div class="feat-badge"><span class="badge-tag hot">本周热门</span></div>
+          <div class="feat-icon">AI</div>
+          <div class="feat-title">AI 大模型入门 30 讲</div>
+          <div class="feat-desc">从 Transformer 到 GPT，零基础掌握大模型核心技术栈</div>
+          <div style="display:flex;gap:8px;">
+            <button class="comic-btn primary sm">开始闯关</button>
+            <span style="font-size:0.7rem;color:var(--gray);line-height:2.2;">2350人已学</span>
+          </div>
+        </div>
+
+        <!-- Trending Quizzes -->
+        <div class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#F59E0B" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          热门闯关
+        </div>
+        <div class="quiz-row">
+          <div class="quiz-row-item">
+            <div class="qr-icon" style="background:#DBEAFE;">Py</div>
+            <div class="qr-info"><div class="qr-title">Python 异步编程深入</div><div class="qr-meta">10题 · 中等 · 1260人已闯</div></div>
+            <div class="qr-stat">均分7.2</div>
+          </div>
+          <div class="quiz-row-item">
+            <div class="qr-icon" style="background:#D1FAE5;">生</div>
+            <div class="qr-info"><div class="qr-title">高中生物必修一</div><div class="qr-meta">15题 · 简单 · 890人已闯</div></div>
+            <div class="qr-stat">均分8.5</div>
+          </div>
+          <div class="quiz-row-item">
+            <div class="qr-icon" style="background:#FEE2E2;">政</div>
+            <div class="qr-info"><div class="qr-title">考研政治马原篇</div><div class="qr-meta">20题 · 困难 · 670人已闯</div></div>
+            <div class="qr-stat">均分6.8</div>
+          </div>
+        </div>
+
+        <!-- Nav -->
+        <div class="nav-bar">
+          <div class="nav-item"><svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>首页</div>
+          <div class="nav-item active"><svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>发现</div>
+          <div class="nav-item"><svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>出题</div>
+          <div class="nav-item"><svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>消息</div>
+          <div class="nav-item"><svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 2/6: 排行榜
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">2</span>排行榜</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div class="page-title">排行榜</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="rank-tabs">
+          <div class="rank-tab active">全站排行</div>
+          <div class="rank-tab">好友排行</div>
+          <div class="rank-tab">Python</div>
+        </div>
+
+        <!-- Podium -->
+        <div class="rank-podium">
+          <div class="rank-spot" style="padding-bottom:20px;">
+            <div class="p-crown">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#C0C0C0" stroke="#1E1E1E" stroke-width="1.5"><path d="M2 4l3 12h14l3-12-6 4-4-6-4 6-6-4z"/><path d="M4 18h16v2H4z"/></svg>
+            </div>
+            <div class="p-avatar">李</div>
+            <div class="p-name">小明爱学习</div>
+            <div class="p-score">总分 8,520</div>
+          </div>
+          <div class="rank-spot">
+            <div class="p-crown">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFD700" stroke="#1E1E1E" stroke-width="1.5"><path d="M2 4l3 12h14l3-12-6 4-4-6-4 6-6-4z"/><path d="M4 18h16v2H4z"/></svg>
+            </div>
+            <div class="p-avatar">灯</div>
+            <div class="p-name">爱学习的灯灯</div>
+            <div class="p-score">总分 9,240</div>
+          </div>
+          <div class="rank-spot" style="padding-bottom:10px;">
+            <div class="p-crown">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#CD7F32" stroke="#1E1E1E" stroke-width="1.5"><path d="M2 4l3 12h14l3-12-6 4-4-6-4 6-6-4z"/><path d="M4 18h16v2H4z"/></svg>
+            </div>
+            <div class="p-avatar">知</div>
+            <div class="p-name">知识猎人</div>
+            <div class="p-score">总分 7,890</div>
+          </div>
+        </div>
+
+        <!-- Rank List -->
+        <div class="rank-list">
+          <div class="rank-item"><div class="r-rank" style="font-size:0.8rem;">4</div><div class="r-avatar" style="background:#DBEAFE;">王</div><div class="r-info"><div class="r-name">程序员老王</div><div class="r-meta">正确率 78% · 闯关 86 次</div></div><div class="r-score">7,120</div></div>
+          <div class="rank-item"><div class="r-rank" style="font-size:0.8rem;">5</div><div class="r-avatar" style="background:#D1FAE5;">学</div><div class="r-info"><div class="r-name">每天学一点</div><div class="r-meta">正确率 91% · 闯关 52 次</div></div><div class="r-score">6,850</div></div>
+          <div class="rank-item"><div class="r-rank" style="font-size:0.8rem;">6</div><div class="r-avatar" style="background:#FEE2E2;">史</div><div class="r-info"><div class="r-name">历史小达人</div><div class="r-meta">正确率 85% · 闯关 63 次</div></div><div class="r-score">6,520</div></div>
+          <div class="rank-item"><div class="r-rank" style="font-size:0.8rem;">7</div><div class="r-avatar" style="background:#EDE9FE;">考</div><div class="r-info"><div class="r-name">考研冲刺中</div><div class="r-meta">正确率 72% · 闯关 94 次</div></div><div class="r-score">6,100</div></div>
+          <div class="rank-item me"><div class="r-rank" style="font-size:0.8rem;color:var(--blue);">12</div><div class="r-avatar" style="background:var(--yellow-light);">灯</div><div class="r-info"><div class="r-name" style="color:var(--blue);">我（爱学习的灯灯）</div><div class="r-meta">正确率 82% · 闯关 47 次</div></div><div class="r-score">4,280</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 3/6: 每日挑战
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">3</span>每日挑战</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div class="page-title">每日挑战</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Day Counter -->
+        <div class="daily-hero">
+          <div class="day-num">Day 158</div>
+          <div class="day-label">今日挑战题</div>
+          <div class="day-countdown">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            剩余 8 小时 32 分
+          </div>
+        </div>
+
+        <!-- Question -->
+        <div class="daily-question">
+          <div class="dq-domain">趣味冷知识</div>
+          <div class="dq-text">人体最大的器官是什么？</div>
+          <div class="dq-hint">提示：它覆盖全身，重量约占体重的 16%</div>
+        </div>
+
+        <!-- Options -->
+        <div class="quiz-row">
+          <div class="quiz-row-item" style="justify-content:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.75rem;flex-shrink:0;">A</div>
+            <span style="font-size:0.82rem;">心脏</span>
+          </div>
+          <div class="quiz-row-item" style="justify-content:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.75rem;flex-shrink:0;">B</div>
+            <span style="font-size:0.82rem;">皮肤</span>
+          </div>
+          <div class="quiz-row-item" style="justify-content:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.75rem;flex-shrink:0;">C</div>
+            <span style="font-size:0.82rem;">肝脏</span>
+          </div>
+          <div class="quiz-row-item" style="justify-content:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.75rem;flex-shrink:0;">D</div>
+            <span style="font-size:0.82rem;">大脑</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="daily-stats">
+          <div class="daily-stat"><div class="ds-val">85%</div><div class="ds-label">昨日正确率</div></div>
+          <div class="daily-stat"><div class="ds-val">1,280</div><div class="ds-label">今日已答</div></div>
+          <div class="daily-stat"><div class="ds-val">32秒</div><div class="ds-label">最快解答</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 4/6: 好友PK对战
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">4</span>好友PK对战</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div class="page-title">好友PK</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Invite Card -->
+        <div class="pk-invite-card">
+          <div style="font-family:var(--font-display);font-size:1.1rem;">知识对战</div>
+          <div class="pk-vs">
+            <div class="pk-player">
+              <div class="pk-avatar" style="background:var(--yellow-light);">灯</div>
+              <div class="pk-name">我</div>
+            </div>
+            <div class="pk-vs-badge">VS</div>
+            <div class="pk-player">
+              <div class="pk-avatar" style="background:var(--gray-light);">?</div>
+              <div class="pk-name">待邀请</div>
+            </div>
+          </div>
+          <div class="pk-domain">知识领域：Python 编程</div>
+          <button class="comic-btn red lg" style="width:100%;">邀请微信好友对战</button>
+        </div>
+
+        <!-- Recent PK Results -->
+        <div class="section-title">对战记录</div>
+        <div class="pk-result">
+          <div style="font-size:0.72rem;color:var(--gray);margin-bottom:6px;">6月7日 · Python 基础</div>
+          <div class="pk-compare">
+            <div><div class="pk-val win">9/10</div><div style="font-size:0.62rem;">我</div></div>
+            <div style="font-family:var(--font-display);color:var(--gray);">vs</div>
+            <div><div class="pk-val lose">7/10</div><div style="font-size:0.62rem;">小明</div></div>
+          </div>
+          <div style="font-size:0.68rem;color:var(--green);text-align:center;">你赢了！正确率领先 20%</div>
+        </div>
+        <div class="pk-result">
+          <div style="font-size:0.72rem;color:var(--gray);margin-bottom:6px;">6月5日 · 中国近代史</div>
+          <div class="pk-compare">
+            <div><div class="pk-val lose">6/10</div><div style="font-size:0.62rem;">我</div></div>
+            <div style="font-family:var(--font-display);color:var(--gray);">vs</div>
+            <div><div class="pk-val win">8/10</div><div style="font-size:0.62rem;">老张</div></div>
+          </div>
+          <div style="font-size:0.68rem;color:var(--red);text-align:center;">惜败！知识总结已加入错题本</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 5/6: 知识输入扩展 (文档上传 + 链接)
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">5</span>知识输入</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div class="page-title">上传知识素材</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone">
+          <div class="upload-icon">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-text">点击或拖拽文件到此处</div>
+          <div class="upload-hint">支持 PDF · Word · PPT · TXT · 图片，单文件最大 10MB</div>
+        </div>
+
+        <!-- File List -->
+        <div class="file-list">
+          <div class="file-item">
+            <div class="file-icon">PDF</div>
+            <div class="file-info"><div class="file-name">Python入门教程.pdf</div><div class="file-size">2.4 MB</div></div>
+            <div class="file-status">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              已解析
+            </div>
+          </div>
+          <div class="file-item">
+            <div class="file-icon" style="background:#DBEAFE;">DOC</div>
+            <div class="file-info"><div class="file-name">近代史笔记.docx</div><div class="file-size">1.8 MB</div></div>
+            <div class="file-status">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              已解析
+            </div>
+          </div>
+        </div>
+
+        <!-- Link Input -->
+        <div class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          粘贴链接
+        </div>
+        <div class="link-input-row">
+          <input type="url" placeholder="https://... 粘贴网页或公众号文章链接">
+          <button class="comic-btn primary sm">解析</button>
+        </div>
+
+        <!-- Source Info -->
+        <div class="comic-card dashed" style="margin-top:8px;">
+          <div style="font-size:0.72rem;font-weight:700;margin-bottom:2px;">已添加 2 个知识源</div>
+          <div style="font-size:0.68rem;color:var(--gray);">AI 将基于以上素材生成 15 道闯关题目</div>
+        </div>
+        <button class="comic-btn primary lg" style="width:100%;">生成题目</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 6/6: 知识星球
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">6</span>知识星球</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div class="page-title">我的知识星球</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Star Chart -->
+        <div class="star-map">
+          <!-- Python (center, big - mastered) -->
+          <div class="star-node big" style="left:145px;top:70px;">Py</div>
+          <!-- Connected nodes -->
+          <div class="star-node medium" style="left:60px;top:40px;">JS</div>
+          <div class="star-node medium" style="left:240px;top:35px;">AI</div>
+          <div class="star-node medium" style="left:50px;top:140px;">史</div>
+          <div class="star-node medium" style="left:230px;top:150px;">数</div>
+          <div class="star-node small" style="left:100px;top:100px;">算</div>
+          <div class="star-node small" style="left:190px;top:105px;">网</div>
+          <div class="star-node small" style="left:20px;top:190px;">政</div>
+          <div class="star-node small" style="left:120px;top:185px;">物</div>
+          <div class="star-node small" style="left:260px;top:195px;">英</div>
+          <div class="star-node dim" style="left:155px;top:20px;">生</div>
+          <div class="star-node dim" style="left:280px;top:90px;">经</div>
+          <div class="star-node dim" style="left:90px;top:210px;">哲</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="star-legend">
+          <div class="sl-item"><span class="sl-dot mastered"></span>已掌握</div>
+          <div class="sl-item"><span class="sl-dot learning"></span>学习中</div>
+          <div class="sl-item"><span class="sl-dot exploring"></span>探索中</div>
+          <div class="sl-item"><span class="sl-dot undiscovered"></span>未探索</div>
+        </div>
+
+        <!-- Stats -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <div style="flex:1;background:white;border:2px solid var(--black);border-radius:var(--radius-sm);padding:10px;text-align:center;box-shadow:var(--shadow-comic-sm);">
+            <div style="font-family:var(--font-display);font-size:1rem;">12</div>
+            <div style="font-size:0.65rem;color:var(--gray);">已点亮星球</div>
+          </div>
+          <div style="flex:1;background:white;border:2px solid var(--black);border-radius:var(--radius-sm);padding:10px;text-align:center;box-shadow:var(--shadow-comic-sm);">
+            <div style="font-family:var(--font-display);font-size:1rem;">4</div>
+            <div style="font-size:0.65rem;color:var(--gray);">待探索星系</div>
+          </div>
+          <div style="flex:1;background:white;border:2px solid var(--black);border-radius:var(--radius-sm);padding:10px;text-align:center;box-shadow:var(--shadow-comic-sm);">
+            <div style="font-family:var(--font-display);font-size:1rem;">86%</div>
+            <div style="font-size:0.65rem;color:var(--gray);">知识完整度</div>
+          </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="next-recommend">
+          <div class="nr-dot"></div>
+          <div style="flex:1;"><strong>AI 推荐：</strong>你的知识星系还缺一颗 <strong>"机器学习"</strong> 星，要探索吗？</div>
+          <button class="comic-btn primary sm">探索</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /prototype-grid -->
+
+<!-- ===== FOOTER ===== -->
+<div style="text-align:center;margin-top:28px;position:relative;z-index:1;">
+  <p style="font-family:var(--font-display);color:var(--gray);font-size:0.85rem;">
+    Campus Comic Style · 灯灯 AI 学习伴侣 · 第三批扩展功能与社交
+  </p>
+  <p style="font-size:0.7rem;color:var(--gray);">
+    页面 1→6：发现页 · 排行榜 · 每日挑战 · 好友PK · 知识输入 · 知识星球
+  </p>
+</div>
+
+</body>
+</html>
