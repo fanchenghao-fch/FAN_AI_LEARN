@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 闯关学习小程序 · 核心业务流程原型</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<!-- Preconnect for faster font loading -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* ============================================================
+   CSS VARIABLES — Campus Comic 校园漫画色板
+   ============================================================ */
+:root {
+  --blue: #2563EB;
+  --blue-light: #60A5FA;
+  --blue-dark: #1D4ED8;
+  --yellow: #FBBF24;
+  --yellow-light: #FDE68A;
+  --yellow-dark: #F59E0B;
+  --red: #EF4444;
+  --red-light: #FCA5A5;
+  --red-dark: #DC2626;
+  --green: #10B981;
+  --green-light: #6EE7B7;
+  --green-dark: #059669;
+  --orange: #F97316;
+  --orange-light: #FDBA74;
+  --purple: #8B5CF6;
+  --pink: #EC4899;
+
+  --black: #1E1E1E;
+  --dark: #374151;
+  --gray: #9CA3AF;
+  --gray-light: #E5E7EB;
+  --white: #FFFBEB;
+  --paper: #FFFDF5;
+  --card-bg: #FFFFFF;
+
+  --border-w: 3px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-comic: 4px 4px 0px var(--black);
+  --shadow-comic-sm: 2px 2px 0px var(--black);
+
+  --font-display: 'ZCOOL QingKe HuangYou', 'ZCOOL KuaiLe', cursive;
+  --font-body: 'Noto Sans SC', sans-serif;
+  --font-comic: 'Luckiest Guy', cursive;
+}
+
+/* ============================================================
+   GLOBAL RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* UX: Eliminate 300ms tap delay + smooth scrolling */
+html { touch-action: manipulation; scroll-behavior: smooth; }
+
+/* UX: Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  font-family: var(--font-body);
+  background: #F0EDE0;
+  background-image:
+    radial-gradient(circle, #D1CBB8 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--black);
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+}
+
+/* Paper texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.008) 2px, rgba(0,0,0,0.008) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.005) 3px, rgba(0,0,0,0.005) 6px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.page-header {
+  text-align: center;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  color: var(--black);
+  text-shadow: 3px 3px 0px var(--yellow);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  -webkit-text-stroke: 1px var(--black);
+}
+.page-header .subtitle {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--dark);
+  background: var(--yellow-light);
+  display: inline-block;
+  padding: 4px 18px;
+  border-radius: 20px;
+  border: 2px solid var(--black);
+}
+
+/* ============================================================
+   PROTOTYPE GRID — 一行三列，响应式
+   ============================================================ */
+.prototype-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1280px) {
+  .prototype-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 860px) {
+  .prototype-grid { grid-template-columns: 1fr; }
+  .page-header h1 { font-size: 1.8rem; }
+}
+
+/* ============================================================
+   PHONE MOCKUP FRAME
+   ============================================================ */
+.phone-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.phone-label {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--white);
+  background: var(--black);
+  padding: 5px 16px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  border: 2px solid var(--black);
+  box-shadow: var(--shadow-comic-sm);
+}
+.phone-label .step-num {
+  background: var(--yellow);
+  color: var(--black);
+  border-radius: 50%;
+  width: 22px; height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  margin-right: 4px;
+  font-weight: 900;
+}
+
+.phone-frame {
+  width: 375px;
+  height: 700px;
+  background: var(--paper);
+  border: 4px solid var(--black);
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    6px 6px 0px var(--black),
+    0 8px 24px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Phone notch */
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 24px;
+  background: var(--black);
+  border-radius: 0 0 16px 16px;
+  z-index: 10;
+}
+
+/* ============================================================
+   SHARED PHONE INTERNALS
+   ============================================================ */
+.phone-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px 18px 16px;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray) transparent;
+}
+.phone-content::-webkit-scrollbar { width: 4px; }
+.phone-content::-webkit-scrollbar-thumb { background: var(--gray); border-radius: 4px; }
+
+/* Status bar spacer */
+.status-bar-spacer { height: 16px; }
+
+/* Comic panel card */
+.comic-card {
+  background: var(--card-bg);
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-comic);
+  position: relative;
+  margin-bottom: 14px;
+}
+.comic-card.dashed { border-style: dashed; }
+
+/* UX: Focus-visible ring for keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* UX: Press-scale claymorphism feedback */
+.comic-btn:active,
+.option-btn:active,
+.hot-quiz-item:active,
+.truefalse-btn:active,
+.attach-btn:active,
+.nav-item:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Bold comic button */
+.comic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 24px;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  box-shadow: var(--shadow-comic-sm);
+  transition: all 0.1s ease;
+  letter-spacing: 1px;
+  position: relative;
+  text-decoration: none;
+  color: var(--black);
+}
+.comic-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+.comic-btn.primary { background: var(--blue); color: white; }
+.comic-btn.yellow { background: var(--yellow); }
+.comic-btn.red { background: var(--red); color: white; }
+.comic-btn.green { background: var(--green); color: white; }
+.comic-btn.outline { background: white; }
+.comic-btn.sm { font-size: 0.78rem; padding: 6px 14px; }
+.comic-btn.lg { font-size: 1.2rem; padding: 14px 36px; border-radius: var(--radius-xl); }
+
+/* Speech bubble */
+.speech-bubble {
+  position: relative;
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-comic-sm);
+}
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 30px;
+  width: 18px; height: 18px;
+  background: white;
+  border-right: var(--border-w) solid var(--black);
+  border-bottom: var(--border-w) solid var(--black);
+  transform: rotate(45deg);
+}
+.speech-bubble.right::after { left: auto; right: 30px; }
+
+/* Comic speed lines */
+.speed-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.speed-line {
+  position: absolute;
+  height: 2px;
+  background: var(--black);
+  opacity: 0.3;
+}
+
+/* Halftone dot overlay */
+.halftone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: radial-gradient(circle, #000 1px, transparent 1px);
+  background-size: 6px 6px;
+  border-radius: inherit;
+}
+
+/* Burst / explosion shape */
+.burst {
+  position: relative;
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  clip-path: polygon(5% 0%, 20% 8%, 40% 0%, 55% 10%, 75% 0%, 90% 8%, 100% 20%, 95% 50%, 100% 80%, 88% 92%, 75% 100%, 50% 92%, 30% 100%, 12% 90%, 0% 75%, 5% 50%, 0% 25%);
+  padding: 20px 24px;
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 10px;
+  background: var(--gray-light);
+  border: 2px solid var(--black);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.4s ease;
+}
+.progress-bar .fill.blue { background: var(--blue); }
+.progress-bar .fill.green { background: var(--green); }
+.progress-bar .fill.yellow { background: var(--yellow); }
+
+/* Badge / Tag */
+.badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--black);
+  background: white;
+}
+.badge.hot { background: var(--red); color: white; }
+.badge.new { background: var(--green); color: white; }
+.badge.combo { background: var(--yellow); color: var(--black); }
+
+/* Option button */
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-comic-sm);
+  transition: all 0.1s ease;
+  text-align: left;
+  margin-bottom: 8px;
+}
+.option-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+.option-btn .opt-key {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--gray-light);
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.option-btn.correct {
+  background: var(--green-light);
+  border-color: var(--green-dark);
+}
+.option-btn.correct .opt-key { background: var(--green); color: white; border-color: var(--green-dark); }
+.option-btn.wrong {
+  background: var(--red-light);
+  border-color: var(--red-dark);
+}
+.option-btn.wrong .opt-key { background: var(--red); color: white; border-color: var(--red-dark); }
+.option-btn.reveal-correct {
+  background: var(--green-light);
+  animation: pulse-green 0.6s ease infinite alternate;
+}
+
+@keyframes pulse-green {
+  from { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  to { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+/* Combo fire effect — one-time pop then static emphasis */
+@keyframes combo-fire {
+  0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.combo-active {
+  animation: combo-fire 0.4s ease-out forwards;
+  color: var(--red);
+  text-shadow: 2px 2px 0px var(--yellow), -2px -2px 0px var(--orange);
+}
+
+/* Shake animation for wrong answer */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* Pop-in animation */
+@keyframes pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: pop-in 0.3s ease forwards; }
+
+/* Float animation — only on hover, not continuous */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.float {
+  transition: transform 0.3s ease;
+}
+.float:hover {
+  animation: float 0.8s ease-in-out 1;
+}
+
+/* Sparkle — limited duration, used only in loading states */
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ============================================================
+   PAGE 1: 首页 — 知识输入
+   ============================================================ */
+.page1-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.page1-header .logo {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.page1-header .logo .icon { font-size: 1.5rem; }
+
+.mascot-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.mascot-area .mascot-wrap { flex-shrink: 0; position: relative; }
+.mascot-area .mascot-msg {
+  flex: 1;
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+}
+
+.input-area {
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-comic);
+  margin-bottom: 12px;
+}
+.input-area textarea {
+  width: 100%;
+  border: 2px dashed var(--gray);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  resize: none;
+  outline: none;
+  background: var(--paper);
+  min-height: 60px;
+  transition: border-color 0.2s;
+}
+.input-area textarea:focus { border-color: var(--blue); border-style: solid; }
+.input-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.input-actions .attach-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  padding: 10px 14px;
+  min-height: 44px;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  box-shadow: var(--shadow-comic-sm);
+  transition: all 0.1s;
+  touch-action: manipulation;
+}
+.input-actions .attach-btn:active { transform: translate(1px,1px); box-shadow: none; }
+
+.hot-quiz-section { margin-bottom: 12px; }
+.hot-quiz-section .section-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hot-quiz-list { display: flex; flex-direction: column; gap: 8px; }
+.hot-quiz-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-comic-sm);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.hot-quiz-item:active { transform: translate(1px,1px); box-shadow: none; }
+.hot-quiz-item .quiz-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 2px solid var(--black);
+  flex-shrink: 0;
+}
+.hot-quiz-item .quiz-info { flex: 1; min-width: 0; }
+.hot-quiz-item .quiz-title { font-weight: 700; font-size: 0.85rem; }
+.hot-quiz-item .quiz-meta { font-size: 0.7rem; color: var(--gray); }
+
+.nav-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 0;
+  border-top: 2px solid var(--black);
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: var(--gray);
+  cursor: pointer;
+}
+.nav-item.active { color: var(--blue); }
+.nav-item .nav-icon { font-size: 1.2rem; }
+.nav-icon-svg { width: 22px; height: 22px; display: block; margin: 0 auto; }
+.nav-item.active .nav-icon-svg { color: var(--blue); }
+
+/* ============================================================
+   PAGE 2: AI 出题加载中
+   ============================================================ */
+.loading-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 40px;
+}
+.loading-mascot { margin-bottom: 16px; position: relative; }
+.loading-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+.loading-subtitle {
+  font-size: 0.78rem;
+  color: var(--dark);
+  margin-bottom: 20px;
+}
+
+/* Loading cauldron / pot animation */
+.loading-pot {
+  position: relative;
+  width: 80px; height: 80px;
+  margin: 0 auto 20px;
+}
+.loading-pot .pot-body {
+  width: 70px; height: 55px;
+  background: var(--dark);
+  border-radius: 0 0 20px 20px;
+  border: 3px solid var(--black);
+  position: absolute;
+  bottom: 0; left: 5px;
+  overflow: hidden;
+}
+.loading-pot .pot-bubble {
+  position: absolute;
+  bottom: 0;
+  width: 8px; height: 8px;
+  background: var(--yellow);
+  border-radius: 50%;
+  animation: bubble-up 1s ease-in infinite;
+}
+.loading-pot .pot-bubble:nth-child(1) { left: 12px; animation-delay: 0s; }
+.loading-pot .pot-bubble:nth-child(2) { left: 28px; animation-delay: 0.2s; }
+.loading-pot .pot-bubble:nth-child(3) { left: 44px; animation-delay: 0.4s; }
+.loading-pot .pot-bubble:nth-child(4) { left: 18px; animation-delay: 0.6s; }
+.loading-pot .pot-bubble:nth-child(5) { left: 34px; animation-delay: 0.8s; }
+
+@keyframes bubble-up {
+  0% { bottom: 0; opacity: 1; transform: translateX(0) scale(1); }
+  100% { bottom: 60px; opacity: 0; transform: translateX(12px) scale(0.3); }
+}
+
+.loading-steps { width: 100%; margin-top: 16px; }
+.loading-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  font-size: 0.82rem;
+  border-left: 3px solid var(--gray-light);
+  margin-bottom: 6px;
+  transition: all 0.3s;
+}
+.loading-step.done {
+  border-left-color: var(--green);
+  color: var(--dark);
+}
+.loading-step.done .step-check { color: var(--green); }
+.loading-step.current {
+  border-left-color: var(--blue);
+  background: rgba(37,99,235,0.05);
+  font-weight: 700;
+}
+.loading-step .step-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+
+.loading-tips {
+  margin-top: 16px;
+  background: var(--yellow-light);
+  border: 2px dashed var(--black);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+/* ============================================================
+   PAGE 3: 选择题答题页
+   ============================================================ */
+.quiz-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.quiz-top-bar .exit-btn {
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--black);
+  background: white;
+}
+.quiz-progress-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.lives-display { display: flex; gap: 3px; }
+.life-icon {
+  width: 20px; height: 20px;
+  transition: all 0.3s;
+}
+.life-icon.lost { opacity: 0.2; transform: scale(0.8); }
+
+.quiz-progress { margin-bottom: 14px; }
+.quiz-progress .progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  margin-bottom: 4px;
+}
+
+.question-card {
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-comic);
+  margin-bottom: 12px;
+  position: relative;
+}
+.question-type-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--black);
+  margin-bottom: 8px;
+  background: var(--yellow-light);
+  font-family: var(--font-display);
+}
+.question-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.question-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+.options-list { margin-bottom: 12px; }
+
+.combo-indicator {
+  text-align: center;
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  min-height: 20px;
+}
+.combo-indicator .combo-count {
+  display: inline-block;
+  background: var(--red);
+  color: white;
+  padding: 3px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--black);
+  box-shadow: var(--shadow-comic-sm);
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+/* ============================================================
+   PAGE 4: 判断题答题页
+   ============================================================ */
+.truefalse-row {
+  display: flex;
+  gap: 12px;
+}
+.truefalse-btn {
+  flex: 1;
+  padding: 18px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  box-shadow: var(--shadow-comic);
+  transition: all 0.1s;
+  background: white;
+}
+.truefalse-btn:active { transform: translate(2px,2px); box-shadow: none; }
+.truefalse-btn.t-btn { background: var(--green-light); }
+.truefalse-btn.f-btn { background: var(--red-light); }
+.truefalse-btn.selected { border-width: 4px; }
+
+/* ============================================================
+   PAGE 5: 答对反馈
+   ============================================================ */
+.correct-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+}
+.correct-burst {
+  background: var(--yellow-light);
+  border: var(--border-w) solid var(--black);
+  border-radius: 50%;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(251,191,36,0.5);
+  animation: pop-in 0.4s ease forwards;
+  position: relative;
+}
+.correct-burst .big-emoji { font-size: 3rem; display: block; }
+.correct-burst .word { font-family: var(--font-display); font-size: 1.2rem; margin-top: 4px; }
+
+.explanation-card {
+  background: var(--green-light);
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-top: 10px;
+  box-shadow: var(--shadow-comic-sm);
+  font-size: 0.8rem;
+  position: relative;
+}
+
+/* Speed lines for combo */
+.comic-speedlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.comic-speedlines .ray {
+  position: absolute;
+  background: var(--black);
+  opacity: 0.15;
+}
+.comic-speedlines .ray:nth-child(1) { width: 3px; height: 100%; left: 20%; transform: rotate(5deg); }
+.comic-speedlines .ray:nth-child(2) { width: 2px; height: 100%; left: 40%; transform: rotate(-3deg); }
+.comic-speedlines .ray:nth-child(3) { width: 3px; height: 100%; left: 60%; transform: rotate(4deg); }
+.comic-speedlines .ray:nth-child(4) { width: 2px; height: 100%; left: 80%; transform: rotate(-5deg); }
+.comic-speedlines .ray:nth-child(5) { width: 100%; height: 3px; top: 30%; transform: skewX(-5deg); }
+
+/* ============================================================
+   PAGE 6: 答错反馈
+   ============================================================ */
+.wrong-mark {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  z-index: 6;
+  pointer-events: none;
+  font-size: 6rem;
+  animation: pop-in 0.3s ease forwards;
+}
+
+.error-explanation {
+  background: var(--red-light);
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-top: 10px;
+  box-shadow: var(--shadow-comic-sm);
+  font-size: 0.8rem;
+}
+.error-explanation .correct-highlight {
+  font-weight: 900;
+  background: var(--green-light);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.encourage-msg {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 8px;
+  color: var(--dark);
+}
+
+/* ============================================================
+   PAGE 7: 通关结果页
+   ============================================================ */
+.result-hero {
+  text-align: center;
+  padding: 20px 0;
+  position: relative;
+}
+.result-score-ring {
+  position: relative;
+  width: 120px; height: 120px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.result-score-ring .score-text {
+  font-family: var(--font-comic);
+  font-size: 2.5rem;
+  color: var(--black);
+  z-index: 1;
+}
+.result-score-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+
+.result-stats {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.result-stat {
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-comic-sm);
+}
+.result-stat .stat-val { font-family: var(--font-display); font-size: 1.2rem; }
+.result-stat .stat-label { font-size: 0.75rem; color: var(--gray); }
+
+.result-grade {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+.result-grade .grade-emoji { font-size: 2.5rem; display: block; }
+
+.result-mascot { margin: 10px 0; text-align: center; }
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ============================================================
+   PAGE 8: 知识总结 + 错题回顾
+   ============================================================ */
+.summary-header {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.knowledge-points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.knowledge-point {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-comic-sm);
+  align-items: flex-start;
+}
+.knowledge-point .kp-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  border: 2px solid var(--black);
+}
+.knowledge-point .kp-text { font-size: 0.82rem; flex: 1; }
+
+.wrong-review-item {
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-comic-sm);
+  margin-bottom: 10px;
+}
+.wrong-review-item .wrong-q { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+.wrong-review-item .wrong-answers {
+  font-size: 0.78rem;
+  display: flex;
+  gap: 10px;
+}
+.wrong-review-item .user-pick { color: var(--red); text-decoration: line-through; }
+.wrong-review-item .real-answer { color: var(--green); font-weight: 700; }
+
+.radar-chart-placeholder {
+  width: 140px; height: 140px;
+  margin: 0 auto 10px;
+  position: relative;
+  border: 2px dashed var(--gray);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.5);
+}
+.radar-chart-placeholder .radar-label {
+  position: absolute;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.radar-chart-placeholder .radar-label:nth-child(1) { top: 4px; left: 50%; transform: translateX(-50%); }
+.radar-chart-placeholder .radar-label:nth-child(2) { top: 50%; right: 2px; transform: translateY(-50%); }
+.radar-chart-placeholder .radar-label:nth-child(3) { bottom: 4px; left: 50%; transform: translateX(-50%); }
+.radar-chart-placeholder .radar-label:nth-child(4) { top: 50%; left: 2px; transform: translateY(-50%); }
+.radar-chart-placeholder .center-text {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+}
+
+/* ============================================================
+   SVG MASCOT — 灯灯 (different poses)
+   ============================================================ */
+.mascot-svg { width: 65px; height: 80px; }
+
+/* ============================================================
+   EXIT / SHARE BUTTON AREA
+   ============================================================ */
+.share-preview {
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-comic);
+  margin-bottom: 12px;
+}
+.share-preview .share-badge {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+.share-preview .share-score {
+  font-family: var(--font-comic);
+  font-size: 3rem;
+  color: var(--red);
+  text-shadow: 3px 3px 0px var(--black);
+  -webkit-text-stroke: 1px var(--black);
+  margin: 8px 0;
+}
+.share-preview .share-quote {
+  font-size: 0.78rem;
+  color: var(--dark);
+  font-style: italic;
+  margin-top: 4px;
+  padding: 6px 12px;
+  background: var(--yellow-light);
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* ============================================================
+   MASCOT SVG COMPONENTS (inline, reused)
+   ============================================================ */
+.mascot-normal svg,
+.mascot-happy svg,
+.mascot-sad svg,
+.mascot-fire svg { display: block; }
+
+/* ============================================================
+   RESPONSIVE FINE-TUNING
+   ============================================================ */
+@media (max-width: 420px) {
+  .phone-frame { width: 100%; max-width: 375px; height: auto; min-height: 620px; }
+  .phone-content { padding: 28px 14px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header">
+  <h1>AI 闯关学习 · 核心业务流程</h1>
+  <div class="subtitle">灯灯陪你学 · Campus Comic Style · 一行三列响应式</div>
+</div>
+
+<!-- ===== PROTOTYPE GRID ===== -->
+<div class="prototype-grid">
+
+  <!-- ============================================================
+       PAGE 1/8: 首页 — 知识输入
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">1</span>首页 · 知识输入</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Header -->
+        <div class="page1-header">
+          <div class="logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            AI闯关学
+          </div>
+          <div class="badge hot">连续学习3天</div>
+        </div>
+
+        <!-- Mascot + Message -->
+        <div class="mascot-area">
+          <div class="mascot-wrap float">
+            <!-- 灯灯 正常表情 SVG -->
+            <svg class="mascot-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="glow1" cx="50%" cy="30%" r="50%">
+                  <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.5"/>
+                  <stop offset="100%" stop-color="#FEF3C7" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <circle cx="50" cy="42" r="46" fill="url(#glow1)"/>
+              <path d="M50 4 C28 4 12 24 16 46 C18 58 24 66 24 72 L24 78 L76 78 L76 72 C76 66 82 58 84 46 C88 24 72 4 50 4Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="3" stroke-linejoin="round"/>
+              <ellipse cx="44" cy="36" rx="14" ry="18" fill="#FDE68A" opacity="0.5"/>
+              <rect x="30" y="78" width="40" height="14" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="3"/>
+              <line x1="34" y1="82" x2="66" y2="82" stroke="#1E1E1E" stroke-width="1.5" opacity="0.3"/>
+              <line x1="34" y1="86" x2="66" y2="86" stroke="#1E1E1E" stroke-width="1.5" opacity="0.3"/>
+              <ellipse cx="36" cy="42" rx="10" ry="12" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+              <circle cx="38" cy="44" r="4" fill="#1E1E1E"/>
+              <circle cx="37" cy="42" r="1.5" fill="white"/>
+              <ellipse cx="60" cy="40" rx="10" ry="12" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+              <circle cx="62" cy="42" r="4" fill="#1E1E1E"/>
+              <circle cx="61" cy="40" r="1.5" fill="white"/>
+              <path d="M28 32 Q36 28 44 32" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M56 30 Q64 26 72 32" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M44 60 Q50 66 56 60" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="28" cy="54" r="4" fill="#FCA5A5" opacity="0.35"/>
+              <circle cx="72" cy="54" r="4" fill="#FCA5A5" opacity="0.35"/>
+              <ellipse cx="38" cy="92" rx="9" ry="4.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+              <ellipse cx="62" cy="92" rx="9" ry="4.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <div class="speech-bubble mascot-msg">
+            <span style="font-family:var(--font-display);">灯灯说：</span><br>
+            把想学的知识丢进来！<br>我帮你变出超酷的题目～
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+          <textarea placeholder="今天想学什么？&#10;比如：Python面试高频题、中国近代史、物理必考公式..."></textarea>
+          <div class="input-actions">
+            <button class="attach-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              文档
+            </button>
+            <button class="attach-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              链接
+            </button>
+            <button class="attach-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              拍照
+            </button>
+            <button class="attach-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              语音
+            </button>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="comic-btn primary lg" style="width:100%; margin-bottom:12px;">
+          开始闯关
+        </button>
+
+        <!-- Hot Quizzes -->
+        <div class="hot-quiz-section">
+          <div class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#F59E0B" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            热门闯关
+          </div>
+          <div class="hot-quiz-list">
+            <div class="hot-quiz-item">
+              <div class="quiz-icon" style="background:#FEF3C7;font-weight:900;font-size:0.8rem;color:#1E1E1E;">Py</div>
+              <div class="quiz-info">
+                <div class="quiz-title">Python面试高频题50道</div>
+                <div class="quiz-meta">1280人已闯关 · 中等难度</div>
+              </div>
+            </div>
+            <div class="hot-quiz-item">
+              <div class="quiz-icon" style="background:#DBEAFE;font-weight:900;font-size:0.8rem;color:#1E1E1E;">史</div>
+              <div class="quiz-info">
+                <div class="quiz-title">中国近代史十大事件</div>
+                <div class="quiz-meta">890人已闯关 · 简单难度</div>
+              </div>
+            </div>
+            <div class="hot-quiz-item">
+              <div class="quiz-icon" style="background:#D1FAE5;font-weight:900;font-size:0.8rem;color:#1E1E1E;">物</div>
+              <div class="quiz-info">
+                <div class="quiz-title">高考物理必考公式</div>
+                <div class="quiz-meta">新上线 · 困难难度</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="nav-bar">
+          <div class="nav-item active">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            首页
+          </div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            发现
+          </div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            出题
+          </div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            消息
+          </div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            我的
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 2/8: AI 出题加载中
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">2</span>AI 智能出题中</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="loading-hero">
+          <!-- 灯灯 忙碌/集中表情 -->
+          <div class="loading-mascot">
+            <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:100px;">
+              <defs>
+                <radialGradient id="glow2" cx="50%" cy="30%" r="50%">
+                  <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#FEF3C7" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <circle cx="50" cy="42" r="44" fill="url(#glow2)"/>
+              <path d="M50 4 C28 4 12 24 16 46 C18 58 24 66 24 72 L24 78 L76 78 L76 72 C76 66 82 58 84 46 C88 24 72 4 50 4Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="3" stroke-linejoin="round"/>
+              <ellipse cx="44" cy="36" rx="14" ry="18" fill="#FDE68A" opacity="0.5"/>
+              <rect x="30" y="78" width="40" height="14" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="3"/>
+              <ellipse cx="36" cy="42" rx="10" ry="12" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+              <circle cx="38" cy="44" r="4" fill="#1E1E1E"/>
+              <ellipse cx="60" cy="40" rx="10" ry="12" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+              <circle cx="62" cy="42" r="4" fill="#1E1E1E"/>
+              <!-- 集中/努力眉毛 (angled down) -->
+              <path d="M26 36 Q34 30 43 36" fill="none" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round"/>
+              <path d="M57 34 Q65 28 74 36" fill="none" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round"/>
+              <!-- 咬嘴唇的嘴 (wavy/zigzag = 努力思考) -->
+              <path d="M44 60 L48 62 L52 60 L56 62" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 小汗滴 -->
+              <path d="M74 56 Q76 52 78 56 Q76 60 74 56Z" fill="#60A5FA" stroke="#1E1E1E" stroke-width="1.5"/>
+              <circle cx="28" cy="54" r="4" fill="#FCA5A5" opacity="0.35"/>
+              <ellipse cx="38" cy="92" rx="9" ry="4.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+              <ellipse cx="62" cy="92" rx="9" ry="4.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <div class="loading-title">灯灯正在疯狂翻书...</div>
+          <div class="loading-subtitle">AI 正在为你定制专属题目</div>
+
+          <!-- 炼药锅动画 -->
+          <div class="loading-pot">
+            <div class="pot-body">
+              <div class="pot-bubble"></div>
+              <div class="pot-bubble"></div>
+              <div class="pot-bubble"></div>
+              <div class="pot-bubble"></div>
+              <div class="pot-bubble"></div>
+            </div>
+          </div>
+
+          <!-- Loading Steps -->
+          <div class="loading-steps">
+            <div class="loading-step done">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>分析知识领域</span>
+            </div>
+            <div class="loading-step done">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>联网搜索扩充知识库</span>
+            </div>
+            <div class="loading-step current">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" style="animation: sparkle 0.8s ease infinite;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              <span>AI 生成题目中...</span>
+            </div>
+            <div class="loading-step">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>校验题目准确性</span>
+            </div>
+          </div>
+
+          <div class="loading-tips">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round" style="vertical-align:-3px;"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="#1E1E1E"/></svg>
+            <strong>灯灯冷知识：</strong>据说连续答对10题会触发隐藏彩蛋！
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 3/8: 选择题答题页
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">3</span>答题页 · 选择题</div>
+    <div class="phone-frame" style="position:relative;">
+      <!-- Comic speed lines background -->
+      <div class="comic-speedlines" style="opacity:0.06;">
+        <div class="ray"></div><div class="ray"></div><div class="ray"></div><div class="ray"></div><div class="ray"></div>
+      </div>
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Top Bar -->
+        <div class="quiz-top-bar">
+          <div class="exit-btn" role="button" aria-label="退出闯关" tabindex="0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="quiz-progress-info">
+            <span style="font-family:var(--font-display);">第 3/10 题</span>
+          </div>
+          <div class="lives-display">
+            <!-- 用炼金瓶表示生命值（灵韵） -->
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" class="life-icon"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="quiz-progress">
+          <div class="progress-label"><span>闯关进度</span><span>30%</span></div>
+          <div class="progress-bar"><div class="fill blue" style="width:30%;"></div></div>
+        </div>
+
+        <!-- Combo indicator -->
+        <div class="combo-indicator">
+          <span class="combo-count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FBBF24" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round" style="vertical-align:-2px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            连击 ×3
+          </span>
+        </div>
+
+        <!-- Question Card -->
+        <div class="question-card">
+          <div class="question-type-badge">单选题</div>
+          <div class="question-text">以下哪个选项是 Python 中的可变数据类型？</div>
+          <div class="question-timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            本题用时 8s
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="options-list">
+          <div class="option-btn">
+            <span class="opt-key">A</span>
+            <span>字符串（str）</span>
+          </div>
+          <div class="option-btn">
+            <span class="opt-key">B</span>
+            <span>列表（list）</span>
+          </div>
+          <div class="option-btn">
+            <span class="opt-key">C</span>
+            <span>元组（tuple）</span>
+          </div>
+          <div class="option-btn">
+            <span class="opt-key">D</span>
+            <span>整数（int）</span>
+          </div>
+        </div>
+
+        <!-- Action row -->
+        <div class="action-row">
+          <button class="comic-btn outline sm">跳过</button>
+          <button class="comic-btn outline sm">上一题</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 4/8: 判断题答题页
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">4</span>答题页 · 判断题</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Top Bar -->
+        <div class="quiz-top-bar">
+          <div class="exit-btn" role="button" aria-label="退出闯关" tabindex="0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="quiz-progress-info">
+            <span style="font-family:var(--font-display);">第 5/10 题</span>
+          </div>
+          <div class="lives-display">
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="quiz-progress">
+          <div class="progress-label"><span>闯关进度</span><span>50%</span></div>
+          <div class="progress-bar"><div class="fill blue" style="width:50%;"></div></div>
+        </div>
+
+        <!-- Combo -->
+        <div class="combo-indicator">
+          <span class="combo-count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FBBF24" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round" style="vertical-align:-2px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            连击 ×5
+          </span>
+        </div>
+
+        <!-- Question Card -->
+        <div class="question-card">
+          <div class="question-type-badge" style="background:#FEE2E2;">判断题</div>
+          <div class="question-text">Python 中的字典（dict）的键必须是不可变类型。</div>
+          <div class="question-timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            本题用时 5s
+          </div>
+        </div>
+
+        <!-- True/False Buttons -->
+        <div class="truefalse-row" style="margin-bottom:12px;">
+          <div class="truefalse-btn t-btn">正确</div>
+          <div class="truefalse-btn f-btn">错误</div>
+        </div>
+
+        <!-- Action row -->
+        <div class="action-row">
+          <button class="comic-btn outline sm">跳过</button>
+          <button class="comic-btn outline sm">上一题</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 5/8: 答对反馈
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">5</span>答对反馈 · 知识讲解</div>
+    <div class="phone-frame" style="position:relative;">
+      <!-- Background celebration effect -->
+      <div class="comic-speedlines">
+        <div class="ray"></div><div class="ray"></div><div class="ray"></div><div class="ray"></div><div class="ray"></div>
+      </div>
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Top Bar -->
+        <div class="quiz-top-bar">
+          <div class="exit-btn" role="button" aria-label="退出闯关" tabindex="0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="quiz-progress-info">
+            <span style="font-family:var(--font-display);">第 3/10 题</span>
+          </div>
+          <div class="lives-display">
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="quiz-progress">
+          <div class="progress-label"><span>闯关进度</span><span>30%</span></div>
+          <div class="progress-bar"><div class="fill green" style="width:30%;"></div></div>
+        </div>
+
+        <!-- Question Card with correct state -->
+        <div class="question-card">
+          <div class="question-type-badge">单选题</div>
+          <div class="question-text">以下哪个选项是 Python 中的可变数据类型？</div>
+          <div class="question-timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            本题用时 8s
+          </div>
+        </div>
+
+        <!-- Options showing correct selection -->
+        <div class="options-list">
+          <div class="option-btn" style="opacity:0.5;">
+            <span class="opt-key">A</span><span>字符串（str）</span>
+          </div>
+          <div class="option-btn correct">
+            <span class="opt-key" style="background:var(--green);color:white;">B</span>
+            <span>列表（list）</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" style="vertical-align:-3px;"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="option-btn" style="opacity:0.5;">
+            <span class="opt-key">C</span><span>元组（tuple）</span>
+          </div>
+          <div class="option-btn" style="opacity:0.5;">
+            <span class="opt-key">D</span><span>整数（int）</span>
+          </div>
+        </div>
+
+        <!-- Knowledge Explanation -->
+        <div class="explanation-card">
+          <div style="font-family:var(--font-display);font-size:0.85rem;margin-bottom:4px;">知识要点</div>
+          <p style="font-size:0.78rem;line-height:1.5;">
+            Python 中，<strong>列表(list)、字典(dict)、集合(set)</strong> 是<strong>可变类型</strong>，其内容可以修改。而 <strong>字符串(str)、元组(tuple)、整数(int)</strong> 是<strong>不可变类型</strong>，一旦创建就不能修改。
+          </p>
+        </div>
+
+        <!-- Mascot praise -->
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <!-- 灯灯 开心发光表情 -->
+          <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="width:50px;height:60px;">
+            <defs>
+              <radialGradient id="glow5" cx="50%" cy="30%" r="50%">
+                <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#FEF3C7" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="42" r="52" fill="url(#glow5)"/>
+            <path d="M52 8 C32 8 16 26 20 46 C22 56 26 62 26 68 L26 74 L78 74 L78 68 C78 62 82 56 84 46 C88 26 72 8 52 8Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="47" cy="38" rx="12" ry="16" fill="#FDE68A" opacity="0.5"/>
+            <rect x="34" y="74" width="36" height="12" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="2.5"/>
+            <ellipse cx="40" cy="44" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <text x="38" y="46" font-size="7" fill="#FBBF24">⭐</text>
+            <ellipse cx="62" cy="42" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <text x="60" y="44" font-size="7" fill="#FBBF24">⭐</text>
+            <path d="M30 32 Q38 26 46 32" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M56 30 Q64 24 72 32" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M44 62 Q51 72 58 62" fill="#EF4444" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="31" cy="56" r="3.5" fill="#FCA5A5" opacity="0.35"/>
+            <ellipse cx="41" cy="86" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+            <ellipse cx="63" cy="86" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          </svg>
+          <div class="speech-bubble" style="flex:1;font-size:0.78rem;">
+            <strong>灯灯：</strong>太厉害了！<br>你已经连对 3 题了！
+          </div>
+        </div>
+
+        <button class="comic-btn primary" style="width:100%;margin-top:10px;">
+          下一题
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 6/8: 答错反馈
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">6</span>答错反馈 · 错题讲解</div>
+    <div class="phone-frame" style="position:relative;">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Top Bar -->
+        <div class="quiz-top-bar">
+          <div class="exit-btn" role="button" aria-label="退出闯关" tabindex="0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="quiz-progress-info">
+            <span style="font-family:var(--font-display);">第 2/10 题</span>
+          </div>
+          <div class="lives-display">
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" class="life-icon lost"><rect x="4" y="2" width="16" height="4" rx="1" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#F3F4F6"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="10" cy="12" r="2" fill="#FEF3C7"/></svg>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="quiz-progress">
+          <div class="progress-label"><span>闯关进度</span><span>20%</span></div>
+          <div class="progress-bar"><div class="fill blue" style="width:20%;"></div></div>
+        </div>
+
+        <!-- Combo broken -->
+        <div class="combo-indicator" style="color:var(--gray);font-size:0.75rem;">
+          连击中断...
+        </div>
+
+        <!-- Question Card -->
+        <div class="question-card shake">
+          <div class="question-type-badge">单选题</div>
+          <div class="question-text">Python 中，以下哪个是用于定义函数的保留字？</div>
+          <div class="question-timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            本题用时 12s
+          </div>
+        </div>
+
+        <!-- Options showing wrong selection -->
+        <div class="options-list">
+          <div class="option-btn wrong">
+            <span class="opt-key">A</span>
+            <span>func — 你的选择</span>
+          </div>
+          <div class="option-btn reveal-correct">
+            <span class="opt-key" style="background:var(--green);color:white;">B</span>
+            <span>def — 正确答案</span>
+          </div>
+          <div class="option-btn" style="opacity:0.5;">
+            <span class="opt-key">C</span><span>function</span>
+          </div>
+          <div class="option-btn" style="opacity:0.5;">
+            <span class="opt-key">D</span><span>define</span>
+          </div>
+        </div>
+
+        <!-- Error Explanation -->
+        <div class="error-explanation">
+          <div style="font-family:var(--font-display);font-size:0.85rem;margin-bottom:4px;">详细讲解</div>
+          <p style="font-size:0.78rem;line-height:1.5;">
+            Python 定义函数使用 <span class="correct-highlight">def</span> 关键字。<strong>func</strong> 和 <strong>function</strong> 不是 Python 保留字，<strong>define</strong> 是其他语言（如 C 预处理器）的关键字。Python 的简洁设计选择了最短的 "def"。
+          </p>
+        </div>
+
+        <!-- Mascot encourage -->
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <!-- 灯灯 鼓励表情（稍暗但温暖） -->
+          <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="width:50px;height:60px;">
+            <defs>
+              <radialGradient id="glow6" cx="50%" cy="30%" r="50%">
+                <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#FEF3C7" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="42" r="42" fill="url(#glow6)"/>
+            <path d="M52 8 C32 8 16 26 20 46 C22 56 26 62 26 68 L26 74 L78 74 L78 68 C78 62 82 56 84 46 C88 26 72 8 52 8Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="47" cy="38" rx="12" ry="16" fill="#FDE68A" opacity="0.4"/>
+            <rect x="34" y="74" width="36" height="12" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="2.5"/>
+            <ellipse cx="40" cy="44" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <circle cx="42" cy="46" r="3.5" fill="#1E1E1E"/>
+            <ellipse cx="62" cy="42" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <circle cx="64" cy="44" r="3.5" fill="#1E1E1E"/>
+            <circle cx="40" cy="48" r="1.2" fill="white"/>
+            <circle cx="62" cy="46" r="1.2" fill="white"/>
+            <!-- 小泪滴 -->
+            <path d="M34 56 Q35 53 37 56 Q35 59 34 56Z" fill="#60A5FA" stroke="#1E1E1E" stroke-width="1" opacity="0.6"/>
+            <!-- 鼓励的温柔眉 -->
+            <path d="M30 36 Q39 33 47 38" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M55 36 Q63 33 72 38" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- 小鼓励微笑 -->
+            <path d="M45 62 Q51 66 57 62" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="31" cy="56" r="3.5" fill="#FCA5A5" opacity="0.35"/>
+            <ellipse cx="41" cy="86" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+            <ellipse cx="63" cy="86" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          </svg>
+          <div class="speech-bubble" style="flex:1;font-size:0.78rem;">
+            <strong>灯灯：</strong>没关系！<br>错了才能记住，加油
+          </div>
+        </div>
+
+        <button class="comic-btn primary" style="width:100%;margin-top:10px;">
+          下一题
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 7/8: 通关结果页
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">7</span>通关结果 · 成绩单</div>
+    <div class="phone-frame">
+      <div class="phone-content" style="text-align:center;">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Grade -->
+        <div class="result-grade">
+          太棒了！
+        </div>
+
+        <!-- Score Ring -->
+        <div class="result-score-ring">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" stroke-width="8"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#10B981" stroke-width="8"
+              stroke-dasharray="327" stroke-dashoffset="65" stroke-linecap="round"/>
+          </svg>
+          <div class="score-text">8/10</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="result-stats">
+          <div class="result-stat">
+            <div class="stat-val">80%</div>
+            <div class="stat-label">正确率</div>
+          </div>
+          <div class="result-stat">
+            <div class="stat-val">2'18"</div>
+            <div class="stat-label">总用时</div>
+          </div>
+          <div class="result-stat">
+            <div class="stat-val">×7</div>
+            <div class="stat-label">最高连击</div>
+          </div>
+        </div>
+
+        <!-- Mascot celebrate -->
+        <div class="result-mascot">
+          <!-- 灯灯 超兴奋（通关庆祝） -->
+          <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="width:70px;height:85px;">
+            <defs>
+              <radialGradient id="glow7" cx="50%" cy="30%" r="60%">
+                <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.9"/>
+                <stop offset="60%" stop-color="#FDE68A" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#FDE68A" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="52" cy="44" r="54" fill="url(#glow7)"/>
+            <!-- 小彩带/confetti点缀 -->
+            <rect x="18" y="18" width="6" height="3" rx="1" fill="#EF4444" transform="rotate(30 21 19)"/>
+            <rect x="78" y="14" width="6" height="3" rx="1" fill="#3B82F6" transform="rotate(-20 81 15)"/>
+            <rect x="72" y="82" width="5" height="2.5" rx="1" fill="#FBBF24" transform="rotate(45 74 83)"/>
+            <rect x="24" y="78" width="5" height="2.5" rx="1" fill="#10B981" transform="rotate(-35 26 79)"/>
+            <path d="M52 8 C32 8 16 26 20 46 C22 56 26 62 26 68 L26 74 L78 74 L78 68 C78 62 82 56 84 46 C88 26 72 8 52 8Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="47" cy="38" rx="12" ry="16" fill="#FDE68A" opacity="0.5"/>
+            <rect x="34" y="74" width="36" height="12" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="2.5"/>
+            <ellipse cx="40" cy="44" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <ellipse cx="62" cy="42" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <!-- 星星眼 -->
+            <polygon points="38,40 39,43 42,43 40,45 41,48 38,46 35,48 36,45 34,43 37,43" fill="#FBBF24" stroke="#1E1E1E" stroke-width="0.8"/>
+            <polygon points="60,38 61,41 64,41 62,43 63,46 60,44 57,46 58,43 56,41 59,41" fill="#FBBF24" stroke="#1E1E1E" stroke-width="0.8"/>
+            <!-- 超兴奋眉 -->
+            <path d="M30 30 Q39 24 48 30" fill="none" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round"/>
+            <path d="M56 28 Q64 22 73 28" fill="none" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round"/>
+            <!-- 大笑嘴 -->
+            <path d="M43 62 Q52 78 61 62" fill="#EF4444" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="31" cy="56" r="3.5" fill="#FCA5A5" opacity="0.35"/>
+            <ellipse cx="41" cy="86" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+            <ellipse cx="63" cy="86" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          </svg>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="result-actions">
+          <button class="comic-btn yellow" style="flex:1;">查看详情</button>
+          <button class="comic-btn red" style="flex:1;">分享海报</button>
+        </div>
+        <button class="comic-btn primary lg" style="width:100%;margin-top:8px;">
+          再来一局
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 8/8: 知识总结 + 错题回顾
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">8</span>知识总结 · 错题回顾</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Summary Header -->
+        <div class="summary-header">AI 知识要点总结</div>
+
+        <!-- Knowledge Points -->
+        <div class="knowledge-points">
+          <div class="knowledge-point">
+            <span class="kp-num">1</span>
+            <span class="kp-text"><strong>可变 vs 不可变类型：</strong>list/dict/set 可变，str/tuple/int 不可变。这是 Python 内存管理的核心概念。</span>
+          </div>
+          <div class="knowledge-point">
+            <span class="kp-num">2</span>
+            <span class="kp-text"><strong>def 关键字：</strong>Python 用最短的 "def" 定义函数，体现其简洁哲学。区别于 JS 的 function。</span>
+          </div>
+          <div class="knowledge-point">
+            <span class="kp-num">3</span>
+            <span class="kp-text"><strong>列表推导式：</strong>[x for x in range(10)] 是 Python 特有的高效写法，比循环更快更简洁。</span>
+          </div>
+          <div class="knowledge-point">
+            <span class="kp-num">4</span>
+            <span class="kp-text"><strong>异常处理：</strong>try/except/finally 结构确保代码健壮性，except 可以捕获多种异常类型。</span>
+          </div>
+        </div>
+
+        <!-- Radar Chart Placeholder -->
+        <div class="comic-card">
+          <div style="font-family:var(--font-display);font-size:0.9rem;margin-bottom:8px;text-align:center;">掌握度雷达图</div>
+          <div class="radar-chart-placeholder">
+            <span class="radar-label">数据类型</span>
+            <span class="radar-label">函数定义</span>
+            <span class="radar-label">异常处理</span>
+            <span class="radar-label">推导式</span>
+            <span class="center-text">综合<br>80%</span>
+          </div>
+        </div>
+
+        <!-- Wrong Questions Review -->
+        <div class="summary-header" style="color:var(--red);">错题回顾 (2题)</div>
+
+        <div class="wrong-review-item">
+          <div class="wrong-q">Q1. Python 中定义函数的保留字是？</div>
+          <div class="wrong-answers">
+            <span class="user-pick">你的答案：func</span>
+            <span class="real-answer">正确答案：def</span>
+          </div>
+          <p style="font-size:0.72rem;color:var(--dark);margin-top:4px;">func 不是 Python 保留字，正确是 def</p>
+        </div>
+
+        <div class="wrong-review-item">
+          <div class="wrong-q">Q2. 以下哪个不是 Python 的不可变类型？</div>
+          <div class="wrong-answers">
+            <span class="user-pick">你的答案：str</span>
+            <span class="real-answer">正确答案：list（list 是可变类型）</span>
+          </div>
+          <p style="font-size:0.72rem;color:var(--dark);margin-top:4px;">str 是不可变类型，题目问的是"不是不可变"= 可变类型</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="result-actions" style="margin-top:10px;">
+          <button class="comic-btn yellow sm">分享海报</button>
+          <button class="comic-btn primary sm">再来一局</button>
+          <button class="comic-btn outline sm">加入错题本</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /prototype-grid -->
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<div style="text-align:center;margin-top:32px;position:relative;z-index:1;">
+  <p style="font-family:var(--font-display);color:var(--gray);font-size:0.85rem;">
+    Campus Comic Style · 灯灯 AI 学习伴侣 · 第一批核心闭环流程
+  </p>
+  <p style="font-size:0.7rem;color:var(--gray);">
+    页面①→⑧：知识输入 → AI出题 → 选择题 → 判断题 → 答对反馈 → 答错反馈 → 通关结果 → 知识总结
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>吉祥物方案比选 v2 — Duolingo风格</title>
+<style>
+/* ============================================================
+   COMPARISON PAGE STYLES
+   ============================================================ */
+:root {
+  --black: #1E1E1E;
+  --gray: #9CA3AF;
+  --gray-light: #E5E7EB;
+  --white: #FFFBEB;
+  --paper: #FFFDF5;
+  --card-bg: #FFFFFF;
+  --border-w: 3px;
+  --radius-md: 16px;
+  --shadow-comic: 4px 4px 0px var(--black);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #F0EDE0;
+  background-image: radial-gradient(circle, #D1CBB8 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--black);
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.page-header .ref {
+  font-size: 0.82rem;
+  color: #666;
+  background: #DBEAFE;
+  display: inline-block;
+  padding: 4px 18px;
+  border-radius: 20px;
+  border: 2px solid var(--black);
+}
+
+/* ============================================================
+   DESIGN PRINCIPLES BANNER
+   ============================================================ */
+.principles {
+  max-width: 1400px;
+  margin: 0 auto 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  font-size: 0.72rem;
+}
+.principles .principle-card {
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+.principles .principle-card .p-icon { font-size: 1.3rem; }
+.principles .principle-card .p-title { font-weight: 900; margin: 4px 0 2px; }
+.principles .principle-card .p-desc { color: #888; font-size: 0.65rem; }
+
+@media (max-width: 900px) { .principles { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 500px) { .principles { grid-template-columns: repeat(2, 1fr); } }
+
+/* ============================================================
+   OPTIONS GRID
+   ============================================================ */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto 28px;
+}
+@media (max-width: 1100px) { .options-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+
+/* Option Card */
+.option-card {
+  background: var(--card-bg);
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-comic);
+  display: flex;
+  flex-direction: column;
+}
+.option-card.pick {
+  border-color: #2563EB;
+  box-shadow: 4px 4px 0px #2563EB;
+}
+.option-card.pick::after {
+  content: '👈 推荐';
+  position: absolute;
+  top: -14px;
+  right: 12px;
+  background: #2563EB;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--black);
+}
+
+.option-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 2px;
+}
+.option-name {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+.option-tagline {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 14px;
+  font-style: italic;
+}
+
+/* ============================================================
+   MASCOT SHOWCASE — Hero View
+   ============================================================ */
+.hero-view {
+  background: var(--white);
+  border: 2px dashed #D1CBB8;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.hero-view .hero-label {
+  font-size: 0.65rem;
+  color: #aaa;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.hero-view .hero-svg { display: block; margin: 0 auto; }
+
+/* Expression strip */
+.expr-strip {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0 12px;
+}
+.expr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.expr-item span {
+  font-size: 0.58rem;
+  color: #999;
+}
+
+/* Feature list */
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+.feature-list li {
+  font-size: 0.76rem;
+  padding: 3px 0;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feature-list li .fi { font-size: 0.85rem; width: 18px; text-align: center; }
+
+/* Pros/Cons */
+.pros-cons {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 0.68rem;
+}
+.pros-cons .pros {
+  background: #ECFDF5;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #A7F3D0;
+}
+.pros-cons .cons {
+  background: #FEF2F2;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #FECACA;
+}
+.pros-cons .lbl {
+  font-weight: 900;
+  margin-bottom: 2px;
+  font-size: 0.7rem;
+}
+
+/* ============================================================
+   COMPARISON TABLE
+   ============================================================ */
+.compare-section {
+  max-width: 1400px;
+  margin: 0 auto 28px;
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-comic);
+}
+.compare-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+.criteria-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.criteria-table th, .criteria-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid #E5E7EB;
+}
+.criteria-table th {
+  background: #F9FAFB;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+.criteria-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+.criteria-table .sc { font-weight: 900; }
+.criteria-table .sc.hi { color: #059669; }
+.criteria-table .sc.md { color: #D97706; }
+
+/* ============================================================
+   CONTEXT PREVIEW — in UI
+   ============================================================ */
+.context-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  max-width: 1400px;
+  margin: 0 auto 28px;
+}
+@media (max-width: 1100px) { .context-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .context-row { grid-template-columns: 1fr; } }
+
+.context-card {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.context-card .ctx-bubble {
+  background: white;
+  border: 2.5px solid #1E1E1E;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 0.66rem;
+  position: relative;
+  flex: 1;
+}
+.context-card .ctx-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 16px;
+  width: 13px; height: 13px;
+  background: white;
+  border-right: 2.5px solid #1E1E1E;
+  border-bottom: 2.5px solid #1E1E1E;
+  transform: rotate(45deg);
+}
+
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header">
+  <h1>🎭 AI 闯关学习 · 吉祥物方案比选 v2</h1>
+  <div class="ref">🇩🇪 参考 Duolingo Duo 设计语言 · 几何形体 + 大眼 + 粗描边 + Chibi 比例</div>
+</div>
+
+<!-- ===== DESIGN PRINCIPLES ===== -->
+<div class="principles">
+  <div class="principle-card">
+    <div class="p-icon">⭕</div>
+    <div class="p-title">几何形体</div>
+    <div class="p-desc">胖乎乎的椭圆/水滴/圆柱，无棱角</div>
+  </div>
+  <div class="principle-card">
+    <div class="p-icon">👁️</div>
+    <div class="p-title">大白眼珠</div>
+    <div class="p-desc">占脸部40%+，是情绪的绝对主角</div>
+  </div>
+  <div class="principle-card">
+    <div class="p-icon">✏️</div>
+    <div class="p-title">统一描边</div>
+    <div class="p-desc">2.5-3px 等宽黑色描边，所有元素一致</div>
+  </div>
+  <div class="principle-card">
+    <div class="p-icon">🎨</div>
+    <div class="p-title">单主色+白</div>
+    <div class="p-desc">一个品牌色 + 白色腹部 + 黑描边</div>
+  </div>
+  <div class="principle-card">
+    <div class="p-icon">👶</div>
+    <div class="p-title">Chibi比例</div>
+    <div class="p-desc">大头小身，头占60%+，可爱最大化</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     OPTIONS GRID
+     ============================================================ -->
+<div class="options-grid">
+
+  <!-- ============================================================
+       OPTION A: 灯灯 — 小灯泡 (RECOMMENDED)
+       ============================================================ -->
+  <div class="option-card pick" style="position:relative;">
+    <div class="option-label">方案 A</div>
+    <div class="option-name">💡 灯灯 DengDeng</div>
+    <div class="option-tagline">"点亮每一个知识瞬间"</div>
+
+    <!-- HERO: 灯灯 主形象 -->
+    <div class="hero-view">
+      <div class="hero-label">MAIN CHARACTER</div>
+      <svg width="100" height="120" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Glow filter -->
+          <radialGradient id="glowA" cx="50%" cy="30%" r="50%">
+            <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#FEF3C7" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Outer glow -->
+        <circle cx="50" cy="42" r="48" fill="url(#glowA)"/>
+
+        <!-- Bulb body — pear/teardrop shape -->
+        <path d="M50 4
+                 C28 4 12 24 16 46
+                 C18 58 24 66 24 72
+                 L24 78 L76 78
+                 L76 72
+                 C76 66 82 58 84 46
+                 C88 24 72 4 50 4Z"
+              fill="#FBBF24" stroke="#1E1E1E" stroke-width="3" stroke-linejoin="round"/>
+
+        <!-- Belly highlight (lighter oval) -->
+        <ellipse cx="44" cy="36" rx="16" ry="20" fill="#FDE68A" stroke="none" opacity="0.6"/>
+
+        <!-- Screw base -->
+        <rect x="30" y="78" width="40" height="14" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="3"/>
+        <line x1="34" y1="82" x2="66" y2="82" stroke="#1E1E1E" stroke-width="1.5" opacity="0.3"/>
+        <line x1="34" y1="86" x2="66" y2="86" stroke="#1E1E1E" stroke-width="1.5" opacity="0.3"/>
+
+        <!-- Left eye (large white oval) -->
+        <ellipse cx="36" cy="42" rx="11" ry="13" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <!-- Left pupil -->
+        <circle cx="38" cy="44" r="4.5" fill="#1E1E1E"/>
+        <!-- Left catchlight -->
+        <circle cx="37" cy="42" r="1.5" fill="white"/>
+
+        <!-- Right eye (large white oval, slightly different angle for playfulness) -->
+        <ellipse cx="60" cy="40" rx="11" ry="13" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <!-- Right pupil -->
+        <circle cx="62" cy="42" r="4.5" fill="#1E1E1E"/>
+        <!-- Right catchlight -->
+        <circle cx="61" cy="40" r="1.5" fill="white"/>
+
+        <!-- Eyebrows (thin expressive curves) -->
+        <path d="M28 32 Q36 28 44 32" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M56 30 Q64 26 72 32" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Mouth (cute small smile) -->
+        <path d="M44 60 Q50 66 56 60" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Tiny blush dots -->
+        <circle cx="28" cy="54" r="4.5" fill="#FCA5A5" opacity="0.35"/>
+        <circle cx="72" cy="54" r="4.5" fill="#FCA5A5" opacity="0.35"/>
+
+        <!-- Small feet -->
+        <ellipse cx="38" cy="92" rx="10" ry="5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+        <ellipse cx="62" cy="92" rx="10" ry="5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+      </svg>
+    </div>
+
+    <!-- Expressions -->
+    <div class="expr-strip">
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="16" ry="14" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="15" cy="22" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="16" cy="23" r="2.5" fill="#1E1E1E"/>
+          <ellipse cx="25" cy="22" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="26" cy="23" r="2.5" fill="#1E1E1E"/>
+          <path d="M12 15 Q16 11 20 15" fill="none" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M25 14 Q29 10 33 14" fill="none" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M18 31 Q21 35 24 31" fill="none" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>开心</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="16" ry="14" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="22" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="15" cy="24" r="1.8" fill="#1E1E1E"/>
+          <ellipse cx="26" cy="22" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="27" cy="24" r="1.8" fill="#1E1E1E"/>
+          <circle cx="12" cy="26" r="1" fill="#60A5FA" opacity="0.6"/>
+          <circle cx="28" cy="26" r="1" fill="#60A5FA" opacity="0.6"/>
+          <path d="M13 17 Q15 19 17 17" fill="none" stroke="#1E1E1E" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M26 17 Q28 19 30 17" fill="none" stroke="#1E1E1E" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M19 32 Q21 33 23 32" fill="none" stroke="#1E1E1E" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span>难过</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="16" ry="14" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="21" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="13" y="23" font-size="5">⭐</text>
+          <ellipse cx="26" cy="21" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="25" y="23" font-size="5">⭐</text>
+          <path d="M10 11 Q15 8 20 11" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+          <path d="M24 10 Q29 7 34 10" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="21" cy="32" rx="5" ry="3.5" fill="#EF4444"/>
+        </svg>
+        <span>兴奋</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="16" ry="14" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="23" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="16" cy="23" r="2" fill="#1E1E1E"/>
+          <ellipse cx="26" cy="23" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="28" cy="23" r="2" fill="#1E1E1E"/>
+          <path d="M12 17 Q15 21 18 17" fill="none" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M24 17 Q27 21 30 17" fill="none" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M14 32 Q21 28 28 32" fill="none" stroke="#1E1E1E" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>怀疑</span>
+      </div>
+    </div>
+
+    <ul class="feature-list">
+      <li><span class="fi">💡</span> 灯泡形体——"学到新知=点亮灯泡"天生隐喻</li>
+      <li><span class="fi">🟡</span> 主色金黄 #FBBF24 + 白色腹部 + 灰色底座</li>
+      <li><span class="fi">👁️</span> 12×14px 大白眼珠，不对称排列显俏皮</li>
+      <li><span class="fi">✨</span> 发光光晕效果（答对时可点亮）</li>
+      <li><span class="fi">🎭</span> 4 种表情：眉毛 + 瞳孔 + 嘴三者联动</li>
+    </ul>
+
+    <div class="pros-cons">
+      <div class="pros"><div class="lbl">👍 优势</div>与"学习"隐喻最强<br>发光动效天然适配答对反馈<br>金黄配色温暖醒目</div>
+      <div class="cons"><div class="lbl">👎 不足</div>灯泡造型相对常见<br>底座在 chibi 比例下显小<br>灰色底座可能略沉闷</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION B: 笔笔 — 小铅笔
+       ============================================================ -->
+  <div class="option-card">
+    <div class="option-label">方案 B</div>
+    <div class="option-name">✏️ 笔笔 BiBi</div>
+    <div class="option-tagline">"书写你的知识地图"</div>
+
+    <!-- HERO: 笔笔 -->
+    <div class="hero-view">
+      <div class="hero-label">MAIN CHARACTER</div>
+      <svg width="100" height="120" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Pencil body -->
+        <rect x="32" y="4" width="36" height="62" rx="6" fill="#FBBF24" stroke="#1E1E1E" stroke-width="3"/>
+
+        <!-- Belly stripe -->
+        <rect x="38" y="14" width="24" height="38" rx="4" fill="#FDE68A" stroke="none" opacity="0.5"/>
+
+        <!-- Eraser (pink top) -->
+        <rect x="34" y="66" width="32" height="16" rx="5" fill="#F472B6" stroke="#1E1E1E" stroke-width="3"/>
+
+        <!-- Metal band -->
+        <rect x="36" y="60" width="28" height="8" rx="2" fill="#D1D5DB" stroke="#1E1E1E" stroke-width="2.5"/>
+
+        <!-- Eyes -->
+        <ellipse cx="42" cy="30" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <circle cx="43" cy="32" r="3.5" fill="#1E1E1E"/>
+        <circle cx="42" cy="30" r="1.2" fill="white"/>
+
+        <ellipse cx="62" cy="28" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <circle cx="63" cy="30" r="3.5" fill="#1E1E1E"/>
+        <circle cx="62" cy="28" r="1.2" fill="white"/>
+
+        <!-- Eyebrows -->
+        <path d="M35 21 Q42 18 48 22" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M56 20 Q62 17 68 22" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Mouth -->
+        <path d="M46 44 Q50 49 54 44" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Blush -->
+        <circle cx="34" cy="42" r="3.5" fill="#FCA5A5" opacity="0.35"/>
+        <circle cx="66" cy="42" r="3.5" fill="#FCA5A5" opacity="0.35"/>
+
+        <!-- Pencil tip (dark) -->
+        <polygon points="50,86 38,104 62,104" fill="#374151" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Tip point -->
+        <circle cx="50" cy="108" r="2.5" fill="#1E1E1E"/>
+
+        <!-- Small arms -->
+        <rect x="16" y="36" width="18" height="7" rx="3.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+        <rect x="66" y="36" width="18" height="7" rx="3.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <div class="expr-strip">
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="4" width="18" height="28" rx="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="17" cy="16" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="18" cy="17" r="2" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="15" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="28" cy="16" r="2" fill="#1E1E1E"/>
+          <path d="M14 11 Q17 8 20 11" fill="none" stroke="#1E1E1E" stroke-width="1.2"/>
+          <path d="M24 10 Q27 7 30 10" fill="none" stroke="#1E1E1E" stroke-width="1.2"/>
+          <path d="M19 23 Q21 26 23 23" fill="none" stroke="#1E1E1E" stroke-width="1.2"/>
+        </svg>
+        <span>开心</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="4" width="18" height="28" rx="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="16" cy="16" rx="4" ry="5" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="17" cy="18" r="1.5" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="16" rx="4" ry="5" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="28" cy="18" r="1.5" fill="#1E1E1E"/>
+          <path d="M14 13 Q16 15 18 13" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <path d="M25 13 Q27 15 29 13" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <path d="M20 24 Q21 25 22 24" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <circle cx="14" cy="20" r="1" fill="#60A5FA" opacity="0.5"/>
+          <circle cx="29" cy="20" r="1" fill="#60A5FA" opacity="0.5"/>
+        </svg>
+        <span>难过</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="4" width="18" height="28" rx="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="16" cy="15" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="14" y="17" font-size="4">⭐</text>
+          <ellipse cx="27" cy="15" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="25" y="17" font-size="4">⭐</text>
+          <path d="M12 8 Q16 5 20 8" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M24 7 Q28 4 32 7" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <ellipse cx="21" cy="25" rx="4" ry="2.5" fill="#EF4444"/>
+        </svg>
+        <span>兴奋</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="4" width="18" height="28" rx="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="16" cy="17" rx="4" ry="5" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="18" cy="17" r="1.5" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="17" rx="4" ry="5" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="29" cy="17" r="1.5" fill="#1E1E1E"/>
+          <path d="M13 12 Q16 16 19 12" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M24 12 Q27 16 30 12" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M16 27 Q21 23 26 27" fill="none" stroke="#1E1E1E" stroke-width="1.2"/>
+        </svg>
+        <span>怀疑</span>
+      </div>
+    </div>
+
+    <ul class="feature-list">
+      <li><span class="fi">✏️</span> 铅笔形体——"书写=学习"的普世符号</li>
+      <li><span class="fi">🟡🩷</span> 黄色笔身 + 粉色橡皮擦 + 深灰笔尖</li>
+      <li><span class="fi">👁️</span> 大白眼珠 + 灵动眉毛（Duolingo 式）</li>
+      <li><span class="fi">🖐️</span> 两侧小手臂，可做挥手/抱书等动作</li>
+      <li><span class="fi">🎭</span> 4 种表情，橡皮擦可做"擦掉重来"动画</li>
+    </ul>
+
+    <div class="pros-cons">
+      <div class="pros"><div class="lbl">👍 优势</div>学习符号强烈<br>粉色橡皮擦增加趣味<br>手臂可做丰富动作</div>
+      <div class="cons"><div class="lbl">👎 不足</div>纵向长条形，在圆形头像中裁切不友好<br>笔尖部分略显尖锐<br>配色元素多（黄+粉+灰+黑）</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION C: 问问 — 问号小子
+       ============================================================ -->
+  <div class="option-card">
+    <div class="option-label">方案 C</div>
+    <div class="option-name">❓ 问问 WenWen</div>
+    <div class="option-tagline">"每个问号都是一次冒险"</div>
+
+    <!-- HERO: 问问 -->
+    <div class="hero-view">
+      <div class="hero-label">MAIN CHARACTER</div>
+      <svg width="100" height="120" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body — teardrop/pear shape (like Duo's body) -->
+        <path d="M50 28
+                 C30 28 16 42 16 62
+                 C16 82 30 96 50 96
+                 C70 96 84 82 84 62
+                 C84 42 70 28 50 28Z"
+              fill="#2563EB" stroke="#1E1E1E" stroke-width="3" stroke-linejoin="round"/>
+
+        <!-- Belly -->
+        <ellipse cx="44" cy="60" rx="18" ry="22" fill="#BFDBFE" stroke="none" opacity="0.5"/>
+
+        <!-- Question mark tuft on head -->
+        <path d="M56 26 C56 14 68 14 68 8 C68 2 62 2 60 4"
+              fill="none" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="60" cy="2" r="2.5" fill="#1E1E1E"/>
+
+        <!-- Eyes — large white ovals -->
+        <ellipse cx="38" cy="48" rx="11" ry="13" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <circle cx="40" cy="50" r="4.5" fill="#1E1E1E"/>
+        <circle cx="39" cy="48" r="1.5" fill="white"/>
+
+        <ellipse cx="62" cy="46" rx="11" ry="13" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <circle cx="64" cy="48" r="4.5" fill="#1E1E1E"/>
+        <circle cx="63" cy="46" r="1.5" fill="white"/>
+
+        <!-- Eyebrows -->
+        <path d="M30 36 Q38 32 44 36" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M58 34 Q66 30 72 36" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Mouth -->
+        <path d="M44 66 Q50 72 56 66" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Blush -->
+        <circle cx="30" cy="60" r="4.5" fill="#FCA5A5" opacity="0.3"/>
+        <circle cx="70" cy="60" r="4.5" fill="#FCA5A5" opacity="0.3"/>
+
+        <!-- Tiny feet -->
+        <ellipse cx="38" cy="98" rx="10" ry="5" fill="#2563EB" stroke="#1E1E1E" stroke-width="2.5"/>
+        <ellipse cx="62" cy="98" rx="10" ry="5" fill="#2563EB" stroke="#1E1E1E" stroke-width="2.5"/>
+      </svg>
+    </div>
+
+    <div class="expr-strip">
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="15" ry="16" fill="#2563EB" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="15" cy="21" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="16" cy="22" r="2.5" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="20" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="28" cy="21" r="2.5" fill="#1E1E1E"/>
+          <path d="M12 13 Q16 9 20 13" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M24 12 Q28 8 32 12" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M17 30 Q21 34 25 30" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+        </svg>
+        <span>开心</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="15" ry="16" fill="#2563EB" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="21" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="15" cy="23" r="1.8" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="21" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="28" cy="23" r="1.8" fill="#1E1E1E"/>
+          <path d="M13 16 Q15 18 17 16" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <path d="M26 16 Q28 18 30 16" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <path d="M19 30 Q21 31 23 30" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <circle cx="12" cy="24" r="1" fill="#60A5FA" opacity="0.5"/>
+          <circle cx="30" cy="24" r="1" fill="#60A5FA" opacity="0.5"/>
+        </svg>
+        <span>难过</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="15" ry="16" fill="#2563EB" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="20" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="12" y="22" font-size="5">⭐</text>
+          <ellipse cx="27" cy="20" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="25" y="22" font-size="5">⭐</text>
+          <path d="M10 10 Q15 7 20 10" fill="none" stroke="#1E1E1E" stroke-width="2"/>
+          <path d="M24 9 Q29 6 34 9" fill="none" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="21" cy="31" rx="5" ry="3" fill="#EF4444"/>
+        </svg>
+        <span>兴奋</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="24" rx="15" ry="16" fill="#2563EB" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="22" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="16" cy="22" r="1.8" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="22" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="29" cy="22" r="1.8" fill="#1E1E1E"/>
+          <path d="M11 15 Q14 19 17 15" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M25 15 Q28 19 31 15" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M15 32 Q21 28 27 32" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+        </svg>
+        <span>怀疑</span>
+      </div>
+    </div>
+
+    <ul class="feature-list">
+      <li><span class="fi">❓</span> 头顶"？"卷毛——直接关联问答，且俏皮可爱</li>
+      <li><span class="fi">🔵</span> 品牌蓝 #2563EB + 浅蓝腹部 + 黑描边</li>
+      <li><span class="fi">👁️</span> 12×14px 大白眼珠 + 眉毛（Duolingo 式）</li>
+      <li><span class="fi">🦶</span> 两个小脚丫，可站立可跳跃</li>
+      <li><span class="fi">🎭</span> 4 种表情，眉毛是变化主角</li>
+    </ul>
+
+    <div class="pros-cons">
+      <div class="pros"><div class="lbl">👍 优势</div>与"问答"直接关联<br>品牌蓝统一视觉<br>身体比例最接近 Duo</div>
+      <div class="cons"><div class="lbl">👎 不足</div>"？"可能暗示困惑<br>单蓝色可能偏冷<br>与"学习"的关联弱于灯泡</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION D: 豆豆 — 智慧豆
+       ============================================================ -->
+  <div class="option-card">
+    <div class="option-label">方案 D</div>
+    <div class="option-name">🫘 豆豆 DouDou</div>
+    <div class="option-tagline">"小小豆子，大大智慧"</div>
+
+    <!-- HERO: 豆豆 -->
+    <div class="hero-view">
+      <div class="hero-label">MAIN CHARACTER</div>
+      <svg width="100" height="110" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body — plump bean shape -->
+        <path d="M50 10
+                 C20 10 8 30 8 56
+                 C8 82 28 100 50 100
+                 C72 100 92 82 92 56
+                 C92 30 80 10 50 10Z"
+              fill="#10B981" stroke="#1E1E1E" stroke-width="3" stroke-linejoin="round"/>
+
+        <!-- Belly highlight -->
+        <ellipse cx="42" cy="52" rx="18" ry="24" fill="#6EE7B7" stroke="none" opacity="0.4"/>
+
+        <!-- Tiny sprout/leaf on head = "growth / learning" -->
+        <path d="M50 10 Q54 0 58 8 Q54 6 50 10Z" fill="#34D399" stroke="#1E1E1E" stroke-width="2"/>
+        <path d="M50 10 Q44 2 42 10 Q46 8 50 10Z" fill="#34D399" stroke="#1E1E1E" stroke-width="2"/>
+
+        <!-- Eyes — big white ovals -->
+        <ellipse cx="36" cy="38" rx="11" ry="13" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <circle cx="38" cy="40" r="4.5" fill="#1E1E1E"/>
+        <circle cx="37" cy="38" r="1.5" fill="white"/>
+
+        <ellipse cx="62" cy="36" rx="11" ry="13" fill="white" stroke="#1E1E1E" stroke-width="2.5"/>
+        <circle cx="64" cy="38" r="4.5" fill="#1E1E1E"/>
+        <circle cx="63" cy="36" r="1.5" fill="white"/>
+
+        <!-- Eyebrows -->
+        <path d="M28 26 Q36 22 42 26" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M58 24 Q66 20 72 26" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Mouth -->
+        <path d="M44 56 Q50 62 56 56" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Blush -->
+        <circle cx="28" cy="52" r="4" fill="#FCA5A5" opacity="0.35"/>
+        <circle cx="72" cy="52" r="4" fill="#FCA5A5" opacity="0.35"/>
+
+        <!-- Tiny feet -->
+        <ellipse cx="36" cy="100" rx="10" ry="5" fill="#10B981" stroke="#1E1E1E" stroke-width="2.5"/>
+        <ellipse cx="64" cy="100" rx="10" ry="5" fill="#10B981" stroke="#1E1E1E" stroke-width="2.5"/>
+      </svg>
+    </div>
+
+    <div class="expr-strip">
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="22" rx="15" ry="14" fill="#10B981" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="15" cy="20" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="16" cy="21" r="2.5" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="19" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="28" cy="20" r="2.5" fill="#1E1E1E"/>
+          <path d="M12 13 Q16 9 20 13" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M24 12 Q28 8 32 12" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M17 28 Q21 32 25 28" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+        </svg>
+        <span>开心</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="22" rx="15" ry="14" fill="#10B981" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="20" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="15" cy="22" r="1.8" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="20" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.2"/>
+          <circle cx="28" cy="22" r="1.8" fill="#1E1E1E"/>
+          <path d="M12 15 Q14 17 16 15" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <path d="M25 15 Q27 17 29 15" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <path d="M19 29 Q21 30 23 29" fill="none" stroke="#1E1E1E" stroke-width="1"/>
+          <circle cx="12" cy="23" r="1" fill="#60A5FA" opacity="0.5"/>
+          <circle cx="29" cy="23" r="1" fill="#60A5FA" opacity="0.5"/>
+        </svg>
+        <span>难过</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="22" rx="15" ry="14" fill="#10B981" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="19" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="12" y="21" font-size="5">⭐</text>
+          <ellipse cx="27" cy="19" rx="6" ry="7" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <text x="25" y="21" font-size="5">⭐</text>
+          <path d="M10 10 Q15 7 20 10" fill="none" stroke="#1E1E1E" stroke-width="2"/>
+          <path d="M24 9 Q29 6 34 9" fill="none" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="21" cy="30" rx="5" ry="3" fill="#EF4444"/>
+        </svg>
+        <span>兴奋</span>
+      </div>
+      <div class="expr-item">
+        <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="21" cy="22" rx="15" ry="14" fill="#10B981" stroke="#1E1E1E" stroke-width="2"/>
+          <ellipse cx="14" cy="21" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="16" cy="21" r="1.8" fill="#1E1E1E"/>
+          <ellipse cx="27" cy="21" rx="5" ry="6" fill="white" stroke="#1E1E1E" stroke-width="1.5"/>
+          <circle cx="29" cy="21" r="1.8" fill="#1E1E1E"/>
+          <path d="M11 14 Q14 18 17 14" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M25 14 Q28 18 31 14" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+          <path d="M15 30 Q21 26 27 30" fill="none" stroke="#1E1E1E" stroke-width="1.5"/>
+        </svg>
+        <span>怀疑</span>
+      </div>
+    </div>
+
+    <ul class="feature-list">
+      <li><span class="fi">🫘</span> 豆子形体——"种子=成长"，学习即生长的隐喻</li>
+      <li><span class="fi">🟢</span> 及格绿 #10B981——暗示"通过/正确"</li>
+      <li><span class="fi">🌱</span> 头顶嫩芽——成长、进步、新知识</li>
+      <li><span class="fi">👁️</span> 大白眼珠 + 眉毛（Duolingo 式）</li>
+      <li><span class="fi">🎭</span> 4 种表情，眉毛 + 瞳孔 + 嘴联动变化</li>
+    </ul>
+
+    <div class="pros-cons">
+      <div class="pros"><div class="lbl">👍 优势</div>绿色=正确/成长的双重隐喻<br>嫩芽=进步，象征最正面<br>小豆子差异化强</div>
+      <div class="cons"><div class="lbl">👎 不足</div>与"问答/学习"关联间接<br>绿色可能被联想为"股票"<br>豆子形与 Duo 太像</div>
+    </div>
+  </div>
+
+</div><!-- /options-grid -->
+
+<!-- ===== COMPARISON TABLE ===== -->
+<div class="compare-section">
+  <h2>📊 多维度对比（Duolingo 标准）</h2>
+  <table class="criteria-table">
+    <thead>
+      <tr><th>评估维度</th><th>💡 灯灯</th><th>✏️ 笔笔</th><th>❓ 问问</th><th>🫘 豆豆</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>几何形体简洁度</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc md">⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td></tr>
+      <tr><td>大眼 + 眉毛表情系统</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td></tr>
+      <tr><td>Chibi 比例（头>身）</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc md">⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td></tr>
+      <tr><td>与"学习/问答"关联度</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc md">⭐⭐⭐</td></tr>
+      <tr><td>动画扩展性</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td></tr>
+      <tr><td>缩放到 32px 识别度</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc md">⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td></tr>
+      <tr><td>差异化（不易撞脸）</td><td class="sc md">⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td></tr>
+      <tr><td>多表情表现力</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td><td class="sc hi">⭐⭐⭐⭐⭐</td></tr>
+      <tr style="background:#FEF3C7;"><td><strong>综合加权</strong></td><td class="sc hi"><strong>4.5 ⭐</strong></td><td class="sc md"><strong>3.5 ⭐</strong></td><td class="sc hi"><strong>4.3 ⭐</strong></td><td class="sc hi"><strong>4.3 ⭐</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== CONTEXT PREVIEWS ===== -->
+<div class="compare-section">
+  <h2>📱 首页对话气泡中的实际效果</h2>
+  <div class="context-row">
+    <!-- A 灯灯 -->
+    <div class="context-card">
+      <svg width="48" height="56" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="42" r="44" fill="#FEF3C7" opacity="0.4"/>
+        <path d="M50 4 C28 4 12 24 16 46 C18 58 24 66 24 72 L24 78 L76 78 L76 72 C76 66 82 58 84 46 C88 24 72 4 50 4Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+        <ellipse cx="44" cy="36" rx="14" ry="18" fill="#FDE68A" opacity="0.5"/>
+        <rect x="30" y="78" width="40" height="12" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="2.5"/>
+        <ellipse cx="36" cy="42" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="38" cy="44" r="3.5" fill="#1E1E1E"/>
+        <ellipse cx="60" cy="40" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="62" cy="42" r="3.5" fill="#1E1E1E"/>
+        <path d="M28 32 Q36 28 44 32" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M56 30 Q64 26 72 32" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M44 60 Q50 66 56 60" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="36" cy="92" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+        <ellipse cx="64" cy="92" rx="8" ry="4" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="28" cy="54" r="3.5" fill="#FCA5A5" opacity="0.3"/>
+        <circle cx="72" cy="54" r="3.5" fill="#FCA5A5" opacity="0.3"/>
+      </svg>
+      <div class="ctx-bubble">想学什么？我帮你点亮知识灯泡！💡</div>
+    </div>
+    <!-- B 笔笔 -->
+    <div class="context-card">
+      <svg width="48" height="56" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="32" y="4" width="36" height="55" rx="6" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5"/>
+        <rect x="38" y="14" width="24" height="32" rx="4" fill="#FDE68A" opacity="0.5"/>
+        <rect x="34" y="59" width="32" height="14" rx="5" fill="#F472B6" stroke="#1E1E1E" stroke-width="2.5"/>
+        <rect x="36" y="53" width="28" height="7" rx="2" fill="#D1D5DB" stroke="#1E1E1E" stroke-width="2"/>
+        <ellipse cx="42" cy="28" rx="8" ry="10" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="43" cy="30" r="3" fill="#1E1E1E"/>
+        <ellipse cx="60" cy="26" rx="8" ry="10" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="61" cy="28" r="3" fill="#1E1E1E"/>
+        <path d="M35 20 Q42 17 48 20" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M54 19 Q60 16 66 20" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M46 41 Q50 46 54 41" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <polygon points="50,77 40,93 60,93" fill="#374151" stroke="#1E1E1E" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="50" cy="97" r="2" fill="#1E1E1E"/>
+      </svg>
+      <div class="ctx-bubble">今天也要奋笔疾书地学习哦！✏️</div>
+    </div>
+    <!-- C 问问 -->
+    <div class="context-card">
+      <svg width="48" height="56" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 28 C30 28 16 42 16 62 C16 82 30 96 50 96 C70 96 84 82 84 62 C84 42 70 28 50 28Z" fill="#2563EB" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+        <ellipse cx="44" cy="60" rx="16" ry="20" fill="#BFDBFE" opacity="0.4"/>
+        <path d="M56 26 C56 14 68 14 68 8 C68 2 62 2 60 4" fill="none" stroke="#1E1E1E" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="60" cy="2" r="2" fill="#1E1E1E"/>
+        <ellipse cx="38" cy="48" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="40" cy="50" r="3.5" fill="#1E1E1E"/>
+        <ellipse cx="60" cy="46" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="62" cy="48" r="3.5" fill="#1E1E1E"/>
+        <path d="M30 36 Q38 32 44 36" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M56 34 Q64 30 70 36" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M44 66 Q50 72 56 66" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="38" cy="98" rx="8" ry="4" fill="#2563EB" stroke="#1E1E1E" stroke-width="2"/>
+        <ellipse cx="62" cy="98" rx="8" ry="4" fill="#2563EB" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="30" cy="60" r="3.5" fill="#FCA5A5" opacity="0.3"/>
+        <circle cx="70" cy="60" r="3.5" fill="#FCA5A5" opacity="0.3"/>
+      </svg>
+      <div class="ctx-bubble">带着好奇心，今天来问倒我吧！❓</div>
+    </div>
+    <!-- D 豆豆 -->
+    <div class="context-card">
+      <svg width="48" height="52" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 10 C20 10 8 30 8 56 C8 82 28 100 50 100 C72 100 92 82 92 56 C92 30 80 10 50 10Z" fill="#10B981" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+        <ellipse cx="42" cy="52" rx="16" ry="22" fill="#6EE7B7" opacity="0.35"/>
+        <path d="M50 10 Q54 0 58 8 Q54 6 50 10Z" fill="#34D399" stroke="#1E1E1E" stroke-width="1.5"/>
+        <path d="M50 10 Q44 2 42 10 Q46 8 50 10Z" fill="#34D399" stroke="#1E1E1E" stroke-width="1.5"/>
+        <ellipse cx="36" cy="38" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="38" cy="40" r="3.5" fill="#1E1E1E"/>
+        <ellipse cx="60" cy="36" rx="9" ry="11" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="62" cy="38" r="3.5" fill="#1E1E1E"/>
+        <path d="M28 26 Q36 22 42 26" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M56 24 Q64 20 70 26" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <path d="M44 56 Q50 62 56 56" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="36" cy="100" rx="8" ry="4" fill="#10B981" stroke="#1E1E1E" stroke-width="2"/>
+        <ellipse cx="64" cy="100" rx="8" ry="4" fill="#10B981" stroke="#1E1E1E" stroke-width="2"/>
+        <circle cx="28" cy="52" r="3" fill="#FCA5A5" opacity="0.3"/>
+        <circle cx="72" cy="52" r="3" fill="#FCA5A5" opacity="0.3"/>
+      </svg>
+      <div class="ctx-bubble">每天浇灌知识，豆子就会发芽哦！🌱</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
