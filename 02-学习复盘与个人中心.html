@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 闯关学习 · 学习复盘与个人中心</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* ============================================================
+   CSS VARIABLES — Campus Comic 校园漫画色板
+   ============================================================ */
+:root {
+  --blue: #2563EB; --blue-light: #60A5FA; --blue-dark: #1D4ED8;
+  --yellow: #FBBF24; --yellow-light: #FDE68A; --yellow-dark: #F59E0B;
+  --red: #EF4444; --red-light: #FCA5A5; --red-dark: #DC2626;
+  --green: #10B981; --green-light: #6EE7B7; --green-dark: #059669;
+  --orange: #F97316; --orange-light: #FDBA74;
+  --purple: #8B5CF6; --pink: #EC4899;
+  --black: #1E1E1E; --dark: #374151; --gray: #9CA3AF; --gray-light: #E5E7EB;
+  --white: #FFFBEB; --paper: #FFFDF5; --card-bg: #FFFFFF;
+  --border-w: 3px;
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px; --radius-xl: 28px;
+  --shadow-comic: 4px 4px 0px var(--black);
+  --shadow-comic-sm: 2px 2px 0px var(--black);
+  --font-display: 'ZCOOL QingKe HuangYou', 'ZCOOL KuaiLe', cursive;
+  --font-body: 'Noto Sans SC', sans-serif;
+  --font-comic: 'Luckiest Guy', cursive;
+}
+
+/* ============================================================
+   GLOBAL RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { touch-action: manipulation; scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  font-family: var(--font-body);
+  background: #F0EDE0;
+  background-image: radial-gradient(circle, #D1CBB8 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--black);
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.008) 2px, rgba(0,0,0,0.008) 4px);
+  pointer-events: none; z-index: 0;
+}
+
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.page-header { text-align: center; margin-bottom: 28px; position: relative; z-index: 1; }
+.page-header h1 { font-family: var(--font-display); font-size: 2.4rem; color: var(--black); text-shadow: 3px 3px 0px var(--yellow); letter-spacing: 2px; -webkit-text-stroke: 1px var(--black); }
+.page-header .subtitle { font-size: 0.9rem; color: var(--dark); background: var(--yellow-light); display: inline-block; padding: 4px 18px; border-radius: 20px; border: 2px solid var(--black); }
+
+/* ============================================================
+   PROTOTYPE GRID
+   ============================================================ */
+.prototype-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 1280px) { .prototype-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 860px) { .prototype-grid { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   PHONE MOCKUP
+   ============================================================ */
+.phone-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.phone-label {
+  font-family: var(--font-display); font-size: 0.9rem;
+  color: var(--white); background: var(--black);
+  padding: 5px 16px; border-radius: 20px; letter-spacing: 1px;
+  border: 2px solid var(--black); box-shadow: var(--shadow-comic-sm);
+}
+.phone-label .step-num {
+  background: var(--yellow); color: var(--black); border-radius: 50%;
+  width: 22px; height: 22px; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 0.75rem; margin-right: 4px; font-weight: 900;
+}
+
+.phone-frame {
+  width: 375px; height: 700px; background: var(--paper);
+  border: 4px solid var(--black); border-radius: 28px; overflow: hidden;
+  position: relative; box-shadow: 6px 6px 0px var(--black), 0 8px 24px rgba(0,0,0,0.15);
+  display: flex; flex-direction: column;
+}
+.phone-frame::before {
+  content: ''; position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%); width: 120px; height: 24px;
+  background: var(--black); border-radius: 0 0 16px 16px; z-index: 10;
+}
+
+.phone-content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 32px 16px 16px; position: relative;
+  scrollbar-width: thin; scrollbar-color: var(--gray) transparent;
+}
+.phone-content::-webkit-scrollbar { width: 4px; }
+.phone-content::-webkit-scrollbar-thumb { background: var(--gray); border-radius: 4px; }
+.status-bar-spacer { height: 16px; }
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+.comic-card {
+  background: var(--card-bg); border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md); padding: 14px;
+  box-shadow: var(--shadow-comic); position: relative; margin-bottom: 12px;
+}
+.comic-card.dashed { border-style: dashed; }
+
+.comic-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
+  padding: 10px 20px; border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-xl); cursor: pointer;
+  box-shadow: var(--shadow-comic-sm); transition: all 0.1s ease;
+  letter-spacing: 1px; text-decoration: none; color: var(--black);
+  touch-action: manipulation; min-height: 44px;
+}
+.comic-btn:active { transform: scale(0.95); }
+.comic-btn.primary { background: var(--blue); color: white; }
+.comic-btn.yellow { background: var(--yellow); }
+.comic-btn.red { background: var(--red); color: white; }
+.comic-btn.green { background: var(--green); color: white; }
+.comic-btn.outline { background: white; }
+.comic-btn.sm { font-size: 0.78rem; padding: 8px 14px; }
+.comic-btn.lg { font-size: 1.1rem; padding: 12px 28px; }
+
+.section-title {
+  font-family: var(--font-display); font-size: 0.95rem;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+
+.badge-tag {
+  display: inline-block; font-family: var(--font-display);
+  font-size: 0.7rem; padding: 3px 10px; border-radius: 12px;
+  border: 2px solid var(--black); background: white;
+}
+
+.progress-bar {
+  height: 8px; background: var(--gray-light); border: 2px solid var(--black);
+  border-radius: 8px; overflow: hidden;
+}
+.progress-bar .fill { height: 100%; border-radius: 6px; }
+.progress-bar .fill.blue { background: var(--blue); }
+.progress-bar .fill.green { background: var(--green); }
+.progress-bar .fill.yellow { background: var(--yellow); }
+.progress-bar .fill.red { background: var(--red); }
+
+/* Nav bar */
+.nav-bar {
+  display: flex; justify-content: space-around;
+  padding: 8px 0 0; border-top: 2px solid var(--black);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; font-size: 0.75rem; color: var(--gray); cursor: pointer;
+}
+.nav-item.active { color: var(--blue); }
+.nav-icon-svg { width: 22px; height: 22px; display: block; margin: 0 auto; }
+
+/* ============================================================
+   PAGE 1: 个人中心主页
+   ============================================================ */
+.profile-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+}
+.avatar-ring {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: var(--border-w) solid var(--black); box-shadow: var(--shadow-comic-sm);
+  background: var(--yellow-light); display: flex; align-items: center;
+  justify-content: center; font-family: var(--font-display); font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name { font-family: var(--font-display); font-size: 1.3rem; }
+.profile-level { font-size: 0.75rem; color: var(--gray); }
+.level-bar { margin-top: 4px; }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px;
+}
+.stat-card {
+  background: white; border: 2px solid var(--black);
+  border-radius: var(--radius-sm); padding: 10px 8px;
+  text-align: center; box-shadow: var(--shadow-comic-sm);
+}
+.stat-card .stat-val { font-family: var(--font-display); font-size: 1.3rem; }
+.stat-card .stat-label { font-size: 0.7rem; color: var(--gray); }
+.stat-card.accent { background: var(--yellow-light); }
+
+.menu-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;
+}
+.menu-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; background: white; border: 2px solid var(--black);
+  border-radius: var(--radius-md); cursor: pointer;
+  box-shadow: var(--shadow-comic-sm); transition: all 0.1s;
+}
+.menu-item:active { transform: scale(0.95); }
+.menu-item .menu-icon { font-size: 1.5rem; }
+.menu-item .menu-label { font-size: 0.72rem; font-weight: 700; }
+.menu-item .menu-badge {
+  font-size: 0.62rem; background: var(--red); color: white;
+  padding: 1px 8px; border-radius: 8px; border: 1.5px solid var(--black);
+}
+
+.mascot-greeting {
+  display: flex; align-items: flex-end; gap: 8px; margin-bottom: 8px;
+}
+.mascot-greeting .msg {
+  flex: 1; background: white; border: 2px solid var(--black);
+  border-radius: 12px; padding: 8px 10px; font-size: 0.72rem;
+  position: relative; box-shadow: var(--shadow-comic-sm);
+}
+.mascot-greeting .msg::after {
+  content: ''; position: absolute; bottom: -8px; left: 14px;
+  width: 12px; height: 12px; background: white;
+  border-right: 2px solid var(--black); border-bottom: 2px solid var(--black);
+  transform: rotate(45deg);
+}
+
+/* ============================================================
+   PAGE 2: 学习历史
+   ============================================================ */
+.top-bar {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+}
+.top-bar .back-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 2px solid var(--black); background: white; cursor: pointer;
+}
+.top-bar .page-title { font-family: var(--font-display); font-size: 1.1rem; }
+
+.filter-tabs {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.filter-tab {
+  font-size: 0.72rem; padding: 6px 14px; border-radius: 16px;
+  border: 2px solid var(--black); cursor: pointer; background: white; font-weight: 700;
+}
+.filter-tab.active { background: var(--blue); color: white; }
+
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: white; border: 2px solid var(--black);
+  border-radius: var(--radius-sm); margin-bottom: 8px;
+  box-shadow: var(--shadow-comic-sm); cursor: pointer; transition: all 0.1s;
+}
+.history-item:active { transform: scale(0.98); }
+.history-item .h-icon {
+  width: 38px; height: 38px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 1rem;
+  border: 2px solid var(--black); flex-shrink: 0; font-weight: 900;
+}
+.history-item .h-info { flex: 1; min-width: 0; }
+.history-item .h-topic { font-weight: 700; font-size: 0.85rem; }
+.history-item .h-meta { font-size: 0.7rem; color: var(--gray); }
+.history-item .h-score {
+  font-family: var(--font-display); font-size: 1.1rem;
+  text-align: right; flex-shrink: 0;
+}
+.history-item .h-score.good { color: var(--green); }
+.history-item .h-score.ok { color: var(--yellow-dark); }
+.history-item .h-score.bad { color: var(--red); }
+
+/* ============================================================
+   PAGE 3: 错题本列表
+   ============================================================ */
+.domain-group { margin-bottom: 14px; }
+.domain-group .domain-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  font-family: var(--font-display); font-size: 0.9rem;
+}
+.domain-group .domain-count {
+  font-size: 0.7rem; color: var(--gray);
+}
+
+.wrong-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px; background: white; border: 2px solid var(--black);
+  border-radius: var(--radius-sm); margin-bottom: 6px;
+  box-shadow: var(--shadow-comic-sm); cursor: pointer; transition: all 0.1s;
+}
+.wrong-item:active { transform: scale(0.98); }
+.wrong-item .w-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red); margin-top: 5px; flex-shrink: 0;
+}
+.wrong-item .w-text { flex: 1; font-size: 0.78rem; line-height: 1.4; }
+.wrong-item .w-arrow { color: var(--gray); flex-shrink: 0; font-size: 0.9rem; }
+
+.retry-all-bar {
+  display: flex; gap: 8px; align-items: center; padding: 10px;
+  background: var(--yellow-light); border: 2px dashed var(--black);
+  border-radius: var(--radius-sm); margin-bottom: 12px;
+  font-size: 0.78rem;
+}
+
+/* ============================================================
+   PAGE 4: 错题详情 + 重新作答
+   ============================================================ */
+.detail-question {
+  background: white; border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px;
+  box-shadow: var(--shadow-comic);
+}
+.detail-question .q-label { font-size: 0.7rem; color: var(--gray); margin-bottom: 4px; }
+.detail-question .q-text { font-size: 0.9rem; font-weight: 700; line-height: 1.5; margin-bottom: 8px; }
+
+.detail-history {
+  display: flex; gap: 10px; font-size: 0.72rem; margin-bottom: 10px;
+}
+.detail-history .prev-wrong {
+  background: var(--red-light); padding: 4px 10px; border-radius: 8px;
+  border: 1.5px solid var(--red-dark);
+}
+.detail-history .now-right {
+  background: var(--green-light); padding: 4px 10px; border-radius: 8px;
+  border: 1.5px solid var(--green-dark);
+}
+
+.detail-explanation {
+  background: var(--yellow-light); border: 2px dashed var(--black);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-size: 0.78rem; line-height: 1.5; margin-bottom: 10px;
+}
+
+/* ============================================================
+   PAGE 5: 成就墙
+   ============================================================ */
+.achievement-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.ach-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 8px; border-radius: var(--radius-md); text-align: center;
+  border: 2px solid var(--black); box-shadow: var(--shadow-comic-sm);
+  background: white; cursor: pointer; transition: all 0.1s;
+}
+.ach-card:active { transform: scale(0.95); }
+.ach-card.locked { opacity: 0.35; }
+.ach-card .ach-icon {
+  width: 48px; height: 48px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; border: 2px solid var(--black);
+  font-size: 1.3rem;
+}
+.ach-card .ach-icon.gold { background: #FEF3C7; }
+.ach-card .ach-icon.silver { background: #F3F4F6; }
+.ach-card .ach-icon.bronze { background: #FED7AA; }
+.ach-card.unlocked .ach-icon { box-shadow: 0 0 12px rgba(251,191,36,0.4); }
+.ach-card .ach-name { font-size: 0.68rem; font-weight: 700; }
+.ach-card .ach-desc { font-size: 0.62rem; color: var(--gray); }
+
+.achievement-progress {
+  margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  font-size: 0.78rem;
+}
+.achievement-progress .ach-count {
+  font-family: var(--font-display); font-size: 1.1rem; flex-shrink: 0;
+}
+
+/* ============================================================
+   PAGE 6: 学习打卡日历
+   ============================================================ */
+.streak-hero {
+  text-align: center; padding: 14px; margin-bottom: 12px;
+  background: white; border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-comic);
+}
+.streak-hero .streak-num {
+  font-family: var(--font-comic); font-size: 3rem;
+  color: var(--red); text-shadow: 3px 3px 0px var(--black);
+  -webkit-text-stroke: 1px var(--black);
+}
+.streak-hero .streak-label { font-size: 0.85rem; font-weight: 700; }
+
+.calendar-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+}
+.calendar-header .month-label { font-family: var(--font-display); font-size: 1rem; }
+.calendar-header .nav-arrow {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--black); background: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.weekday-row {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  margin-bottom: 6px; font-size: 0.65rem; text-align: center;
+  color: var(--gray); font-weight: 700;
+}
+.day-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+}
+.day-cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+  border: 2px solid transparent; cursor: pointer;
+}
+.day-cell.empty { cursor: default; }
+.day-cell.studied { background: var(--green-light); border-color: var(--green-dark); }
+.day-cell.streak { background: var(--yellow-light); border-color: var(--yellow-dark); }
+.day-cell.today { border-color: var(--blue); border-style: dashed; }
+.day-cell.missed { background: var(--red-light); border-color: var(--red-dark); opacity: 0.4; }
+
+.calendar-legend {
+  display: flex; gap: 12px; justify-content: center; margin-top: 10px; font-size: 0.65rem;
+}
+.calendar-legend .leg-dot {
+  width: 10px; height: 10px; border-radius: 3px; display: inline-block;
+  margin-right: 3px; vertical-align: -1px;
+}
+.calendar-legend .leg-dot.studied { background: var(--green-light); border: 1px solid var(--green-dark); }
+.calendar-legend .leg-dot.streak { background: var(--yellow-light); border: 1px solid var(--yellow-dark); }
+.calendar-legend .leg-dot.missed { background: var(--red-light); border: 1px solid var(--red-dark); }
+
+/* ============================================================
+   灯灯 SVG (normal)
+   ============================================================ */
+.mascot-svg { display: block; }
+
+/* ============================================================
+   PHONE RESPONSIVE
+   ============================================================ */
+@media (max-width: 420px) {
+  .phone-frame { width: 100%; max-width: 375px; height: auto; min-height: 620px; }
+  .phone-content { padding: 28px 12px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header">
+  <h1>AI 闯关学习 · 学习复盘与个人中心</h1>
+  <div class="subtitle">灯灯陪你复盘 · 第二批扩展功能 · 一行三列响应式</div>
+</div>
+
+<!-- ===== PROTOTYPE GRID ===== -->
+<div class="prototype-grid">
+
+  <!-- ============================================================
+       PAGE 1/6: 个人中心主页
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">1</span>个人中心</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <div class="avatar-ring">灯</div>
+          <div class="profile-info">
+            <div class="profile-name">爱学习的灯灯</div>
+            <div class="profile-level">Lv.8 知识学徒</div>
+            <div class="level-bar">
+              <div class="progress-bar"><div class="fill yellow" style="width:65%;"></div></div>
+              <div style="font-size:0.62rem;color:var(--gray);text-align:right;margin-top:2px;">650/1000 经验</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card accent">
+            <div class="stat-val">47</div>
+            <div class="stat-label">累计闯关</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">82%</div>
+            <div class="stat-label">正确率</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">12</div>
+            <div class="stat-label">连续天数</div>
+          </div>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="section-title">学习工具</div>
+        <div class="menu-grid">
+          <div class="menu-item">
+            <div class="menu-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="menu-label">学习历史</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="menu-label">错题本</div>
+            <div class="menu-badge">23题</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="menu-label">成就墙</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="menu-label">打卡日历</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="menu-label">排行榜</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2.5" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="menu-label">收藏夹</div>
+          </div>
+        </div>
+
+        <!-- 灯灯 Greeting -->
+        <div class="mascot-greeting">
+          <svg width="48" height="58" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="42" r="44" fill="#FEF3C7" opacity="0.4"/>
+            <path d="M50 4 C28 4 12 24 16 46 C18 58 24 66 24 72 L24 78 L76 78 L76 72 C76 66 82 58 84 46 C88 24 72 4 50 4Z" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="44" cy="36" rx="14" ry="18" fill="#FDE68A" opacity="0.5"/>
+            <rect x="30" y="78" width="40" height="14" rx="3" fill="#9CA3AF" stroke="#1E1E1E" stroke-width="2.5"/>
+            <ellipse cx="36" cy="42" rx="10" ry="12" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <circle cx="38" cy="44" r="4" fill="#1E1E1E"/>
+            <ellipse cx="60" cy="40" rx="10" ry="12" fill="white" stroke="#1E1E1E" stroke-width="2"/>
+            <circle cx="62" cy="42" r="4" fill="#1E1E1E"/>
+            <path d="M28 32 Q36 28 44 32" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+            <path d="M56 30 Q64 26 72 32" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+            <path d="M44 60 Q50 66 56 60" fill="none" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+            <ellipse cx="38" cy="92" rx="9" ry="4.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+            <ellipse cx="62" cy="92" rx="9" ry="4.5" fill="#FBBF24" stroke="#1E1E1E" stroke-width="2"/>
+          </svg>
+          <div class="msg">今天也要加油闯关哦！错题本里还有23道题等着你复习~</div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="nav-bar">
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>首页</div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>发现</div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>出题</div>
+          <div class="nav-item">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>消息</div>
+          <div class="nav-item active">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 2/6: 学习历史
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">2</span>学习历史</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="page-title">学习历史</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+          <div class="filter-tab active">全部</div>
+          <div class="filter-tab">本周</div>
+          <div class="filter-tab">本月</div>
+          <div class="filter-tab">编程</div>
+          <div class="filter-tab" style="font-size:0.7rem;">历史</div>
+        </div>
+
+        <!-- History List -->
+        <div class="history-item">
+          <div class="h-icon" style="background:#FEF3C7;">Py</div>
+          <div class="h-info">
+            <div class="h-topic">Python面试高频题50道</div>
+            <div class="h-meta">6月8日 · 10题 · 用时 3'12"</div>
+          </div>
+          <div class="h-score good">9/10</div>
+        </div>
+        <div class="history-item">
+          <div class="h-icon" style="background:#DBEAFE;">Li</div>
+          <div class="h-info">
+            <div class="h-topic">中国近代史十大事件</div>
+            <div class="h-meta">6月7日 · 10题 · 用时 4'50"</div>
+          </div>
+          <div class="h-score ok">7/10</div>
+        </div>
+        <div class="history-item">
+          <div class="h-icon" style="background:#D1FAE5;">Js</div>
+          <div class="h-info">
+            <div class="h-topic">JavaScript 闭包与作用域</div>
+            <div class="h-meta">6月6日 · 15题 · 用时 6'20"</div>
+          </div>
+          <div class="h-score good">13/15</div>
+        </div>
+        <div class="history-item">
+          <div class="h-icon" style="background:#FEE2E2;">Ma</div>
+          <div class="h-info">
+            <div class="h-topic">线性代数基础概念</div>
+            <div class="h-meta">6月5日 · 10题 · 用时 5'05"</div>
+          </div>
+          <div class="h-score bad">5/10</div>
+        </div>
+        <div class="history-item">
+          <div class="h-icon" style="background:#EDE9FE;">En</div>
+          <div class="h-info">
+            <div class="h-topic">英语四级高频词汇</div>
+            <div class="h-meta">6月4日 · 20题 · 用时 8'30"</div>
+          </div>
+          <div class="h-score good">17/20</div>
+        </div>
+        <div class="history-item">
+          <div class="h-icon" style="background:#FEF3C7;">Py</div>
+          <div class="h-info">
+            <div class="h-topic">Python 装饰器与生成器</div>
+            <div class="h-meta">6月3日 · 10题 · 用时 4'15"</div>
+          </div>
+          <div class="h-score ok">7/10</div>
+        </div>
+
+        <div style="text-align:center;margin-top:8px;font-size:0.72rem;color:var(--gray);">
+          — 已加载全部 47 条记录 —
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 3/6: 错题本列表
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">3</span>我的错题本</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="page-title">我的错题本</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Retry All -->
+        <div class="retry-all-bar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span style="flex:1;">共有 23 道错题待复习</span>
+          <button class="comic-btn red sm">全部重做</button>
+        </div>
+
+        <!-- Domain Group: Python -->
+        <div class="domain-group">
+          <div class="domain-header">
+            <span style="background:#FEF3C7;padding:2px 8px;border-radius:6px;border:1.5px solid var(--black);">Python</span>
+            <span class="domain-count">8 道错题</span>
+          </div>
+          <div class="wrong-item">
+            <div class="w-dot"></div>
+            <div class="w-text">Python 中定义函数的保留字是？<br><span style="color:var(--red);">你答：func</span> <span style="color:var(--green);">正确：def</span></div>
+            <div class="w-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+          <div class="wrong-item">
+            <div class="w-dot"></div>
+            <div class="w-text">以下哪个不是 Python 的不可变类型？<br><span style="color:var(--red);">你答：str</span> <span style="color:var(--green);">正确：list</span></div>
+            <div class="w-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domain Group: 历史 -->
+        <div class="domain-group">
+          <div class="domain-header">
+            <span style="background:#DBEAFE;padding:2px 8px;border-radius:6px;border:1.5px solid var(--black);">中国近代史</span>
+            <span class="domain-count">5 道错题</span>
+          </div>
+          <div class="wrong-item">
+            <div class="w-dot"></div>
+            <div class="w-text">鸦片战争爆发于哪一年？<br><span style="color:var(--red);">你答：1842</span> <span style="color:var(--green);">正确：1840</span></div>
+            <div class="w-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domain Group: JavaScript -->
+        <div class="domain-group">
+          <div class="domain-header">
+            <span style="background:#D1FAE5;padding:2px 8px;border-radius:6px;border:1.5px solid var(--black);">JavaScript</span>
+            <span class="domain-count">10 道错题</span>
+          </div>
+          <div class="wrong-item">
+            <div class="w-dot"></div>
+            <div class="w-text">闭包的核心特征是什么？<br><span style="color:var(--red);">你答：作用域提升</span> <span style="color:var(--green);">正确：访问外部变量</span></div>
+            <div class="w-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 4/6: 错题详情 + 重新作答
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">4</span>错题详情</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="page-title">错题详情</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Question -->
+        <div class="detail-question">
+          <div class="q-label">Python · 单选题 · 困难</div>
+          <div class="q-text">Python 中，以下哪个是用于定义函数的保留字？</div>
+        </div>
+
+        <!-- Previous vs Current Answer -->
+        <div class="detail-history">
+          <div class="prev-wrong">上次答错：func</div>
+          <div class="now-right">正确答案：def</div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="detail-explanation">
+          <strong>灯灯讲解：</strong><br>
+          Python 使用 <strong>def</strong> 关键字定义函数。<strong>func</strong> 和 <strong>function</strong> 不是 Python 的保留关键字。这是 Python "简洁即美"设计哲学的体现——选择了最短的写法。
+        </div>
+
+        <!-- Retry Section -->
+        <div class="comic-card" style="text-align:center;">
+          <div style="font-family:var(--font-display);margin-bottom:10px;">重新作答</div>
+          <div class="options-list" style="margin-bottom:10px;">
+            <div class="wrong-item" style="align-items:center;cursor:pointer;">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.7rem;flex-shrink:0;">A</div>
+              <div class="w-text" style="font-size:0.82rem;">func</div>
+            </div>
+            <div class="wrong-item" style="align-items:center;cursor:pointer;background:var(--green-light);border-color:var(--green-dark);">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.7rem;flex-shrink:0;background:var(--green);color:white;">B</div>
+              <div class="w-text" style="font-size:0.82rem;">def</div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="wrong-item" style="align-items:center;cursor:pointer;">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.7rem;flex-shrink:0;">C</div>
+              <div class="w-text" style="font-size:0.82rem;">function</div>
+            </div>
+            <div class="wrong-item" style="align-items:center;cursor:pointer;">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.7rem;flex-shrink:0;">D</div>
+              <div class="w-text" style="font-size:0.82rem;">define</div>
+            </div>
+          </div>
+          <button class="comic-btn green" style="width:100%;">掌握！从错题本移除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 5/6: 成就墙
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">5</span>成就墙</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="page-title">成就墙</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Progress -->
+        <div class="achievement-progress">
+          <span class="ach-count">8 / 15</span>
+          <div class="progress-bar" style="flex:1;"><div class="fill green" style="width:53%;"></div></div>
+          <span style="font-size:0.7rem;color:var(--gray);">53%</span>
+        </div>
+
+        <!-- Achievement Grid -->
+        <div class="achievement-grid">
+          <div class="ach-card unlocked">
+            <div class="ach-icon gold">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="ach-name">初次闯关</div>
+            <div class="ach-desc">完成第一次闯关</div>
+          </div>
+          <div class="ach-card unlocked">
+            <div class="ach-icon silver">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div class="ach-name">学习达人</div>
+            <div class="ach-desc">累计闯关 30 次</div>
+          </div>
+          <div class="ach-card unlocked">
+            <div class="ach-icon gold">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="ach-name">百题斩</div>
+            <div class="ach-desc">累计答对 100 题</div>
+          </div>
+          <div class="ach-card unlocked">
+            <div class="ach-icon bronze">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+            </div>
+            <div class="ach-name">五连胜</div>
+            <div class="ach-desc">连续答对 5 题</div>
+          </div>
+          <div class="ach-card">
+            <div class="ach-icon silver">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            </div>
+            <div class="ach-name">周冠军</div>
+            <div class="ach-desc">排行榜周第一</div>
+          </div>
+          <div class="ach-card">
+            <div class="ach-icon gold">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="ach-name">十连击</div>
+            <div class="ach-desc">连续答对 10 题</div>
+          </div>
+          <div class="ach-card locked">
+            <div class="ach-icon gold" style="background:#F3F4F6;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <div class="ach-name">全知全能</div>
+            <div class="ach-desc">正确率达到 95%</div>
+          </div>
+          <div class="ach-card locked">
+            <div class="ach-icon gold" style="background:#F3F4F6;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="ach-name">满星通关</div>
+            <div class="ach-desc">一次闯关全对</div>
+          </div>
+          <div class="ach-card locked">
+            <div class="ach-icon silver" style="background:#F3F4F6;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+            </div>
+            <div class="ach-name">百日坚持</div>
+            <div class="ach-desc">连续打卡 100 天</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE 6/6: 学习打卡日历
+       ============================================================ -->
+  <div class="phone-wrapper">
+    <div class="phone-label"><span class="step-num">6</span>学习打卡日历</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <div class="status-bar-spacer"></div>
+
+        <div class="top-bar">
+          <div class="back-btn" role="button" aria-label="返回">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="page-title">打卡日历</div>
+          <div style="width:32px;"></div>
+        </div>
+
+        <!-- Streak Hero -->
+        <div class="streak-hero">
+          <div class="streak-num">12</div>
+          <div class="streak-label">连续学习天数</div>
+          <div style="font-size:0.72rem;color:var(--gray);margin-top:4px;">
+            当前连胜 · 最长纪录 18 天 · 坚持就是胜利
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar-header">
+          <div class="nav-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="month-label">2026年 6月</div>
+          <div class="nav-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
+        <!-- Weekday Headers -->
+        <div class="weekday-row">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+
+        <!-- Day Grid -->
+        <div class="day-grid">
+          <div class="day-cell empty"></div><div class="day-cell studied">1</div><div class="day-cell studied">2</div><div class="day-cell studied">3</div><div class="day-cell studied">4</div><div class="day-cell studied">5</div><div class="day-cell streak">6</div>
+          <div class="day-cell streak today">7</div><div class="day-cell streak today">8</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">9</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">10</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">11</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">12</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">13</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">14</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">15</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">16</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">17</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">18</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">19</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">20</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">21</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">22</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">23</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">24</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">25</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">26</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">27</div>
+          <div class="day-cell" style="border:1.5px solid #D1D5DB;">28</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">29</div><div class="day-cell" style="border:1.5px solid #D1D5DB;">30</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="calendar-legend">
+          <span><span class="leg-dot studied"></span>已学习</span>
+          <span><span class="leg-dot streak"></span>连续打卡</span>
+          <span><span class="leg-dot missed"></span>漏签</span>
+          <span style="border:1.5px dashed var(--blue);padding:0 4px;border-radius:3px;">今天</span>
+        </div>
+
+        <!-- Week Stats -->
+        <div class="comic-card" style="margin-top:12px;text-align:center;">
+          <div style="font-family:var(--font-display);margin-bottom:6px;">本周统计</div>
+          <div style="display:flex;justify-content:space-around;">
+            <div><div style="font-weight:900;font-size:1.1rem;">7/7</div><div style="font-size:0.65rem;color:var(--gray);">本周打卡</div></div>
+            <div><div style="font-weight:900;font-size:1.1rem;">58</div><div style="font-size:0.65rem;color:var(--gray);">本周答题</div></div>
+            <div><div style="font-weight:900;font-size:1.1rem;">86%</div><div style="font-size:0.65rem;color:var(--gray);">本周正确率</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /prototype-grid -->
+
+<!-- ===== FOOTER ===== -->
+<div style="text-align:center;margin-top:28px;position:relative;z-index:1;">
+  <p style="font-family:var(--font-display);color:var(--gray);font-size:0.85rem;">
+    Campus Comic Style · 灯灯 AI 学习伴侣 · 第二批学习复盘与个人中心
+  </p>
+  <p style="font-size:0.7rem;color:var(--gray);">
+    页面 1→6：个人中心 · 学习历史 · 错题本 · 错题详情 · 成就墙 · 打卡日历
+  </p>
+</div>
+
+</body>
+</html>
