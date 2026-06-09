@@ -1,0 +1,275 @@
+/* ============================================================
+   PAGE 7-8: 通关结果 + 知识总结 + 错题回顾
+   Faithful reproduction of 01-核心业务流程.html PAGES 7/8
+   ============================================================ */
+
+.result-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Result Hero ─────────────────────────────────────── */
+.result-hero {
+  text-align: center;
+  padding: 20px 0;
+  position: relative;
+}
+
+.result-grade {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.grade-emoji {
+  font-size: 2.5rem;
+  display: block;
+}
+
+.result-score-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-text {
+  font-family: var(--font-comic);
+  font-size: 2.5rem;
+  color: var(--black);
+  z-index: 1;
+}
+
+/* ── Result Stats ────────────────────────────────────── */
+.result-stats {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.result-stat {
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-comic-sm);
+  flex: 1;
+}
+
+.stat-val {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--gray);
+  display: block;
+}
+
+/* ── Mascot ───────────────────────────────────────────── */
+.result-mascot {
+  margin: 10px 0;
+  text-align: center;
+}
+
+/* ── Action Buttons ──────────────────────────────────── */
+.result-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.result-actions .comic-btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ── Divider ─────────────────────────────────────────── */
+.section-divider {
+  border-top: 2px dashed var(--gray);
+  margin: 16px 0;
+  position: relative;
+}
+
+.section-divider::after {
+  content: '📖';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--paper);
+  padding: 0 8px;
+  font-size: 0.9rem;
+}
+
+/* ── Knowledge Summary ────────────────────────────────── */
+.summary-header {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.knowledge-points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.knowledge-point {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-comic-sm);
+  align-items: flex-start;
+}
+
+.kp-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  border: 2px solid var(--black);
+}
+
+.kp-text {
+  font-size: 0.82rem;
+  flex: 1;
+}
+
+/* ── Mastery Radar (simplified bar chart) ────────────── */
+.mastery-section {
+  margin-bottom: 14px;
+}
+
+.mastery-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.mastery-label {
+  font-size: 0.75rem;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.mastery-bar-wrap {
+  flex: 1;
+  height: 12px;
+  background: var(--gray-light);
+  border: 1.5px solid var(--black);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mastery-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.mastery-val {
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 32px;
+  text-align: right;
+}
+
+/* ── Wrong Question Review ──────────────────────────────── */
+.wrong-review-section {
+  margin-bottom: 14px;
+}
+
+.wrong-review-item {
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-comic-sm);
+  margin-bottom: 10px;
+}
+
+.wrong-q {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.wrong-answers {
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.wrong-answers .user-wrong {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.wrong-answers .correct-ans {
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ── Study Suggestion ────────────────────────────────── */
+.study-suggestion-card {
+  background: var(--yellow-light);
+  border: 2px solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-comic-sm);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.study-suggestion-card .sug-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.study-suggestion-card .sug-text {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ── Empty State ─────────────────────────────────────── */
+.empty-wrong {
+  text-align: center;
+  padding: 20px;
+  color: var(--gray);
+}
+
+.empty-wrong .empty-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.empty-wrong .empty-text {
+  font-size: 0.85rem;
+}

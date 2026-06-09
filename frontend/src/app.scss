@@ -1,0 +1,249 @@
+/* ============================================================
+   CSS VARIABLES — Campus Comic 校园漫画色板
+   微信小程序 + H5 通用
+   ============================================================ */
+:root,
+page {
+  --blue: #2563EB;
+  --blue-light: #60A5FA;
+  --blue-dark: #1D4ED8;
+  --yellow: #FBBF24;
+  --yellow-light: #FDE68A;
+  --yellow-dark: #F59E0B;
+  --red: #EF4444;
+  --red-light: #FCA5A5;
+  --red-dark: #DC2626;
+  --green: #10B981;
+  --green-light: #6EE7B7;
+  --green-dark: #059669;
+  --orange: #F97316;
+  --orange-light: #FDBA74;
+  --purple: #8B5CF6;
+  --pink: #EC4899;
+
+  --black: #1E1E1E;
+  --dark: #374151;
+  --gray: #9CA3AF;
+  --gray-light: #E5E7EB;
+  --white: #FFFBEB;
+  --paper: #FFFDF5;
+  --card-bg: #FFFFFF;
+
+  --border-w: 3px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-comic: 4px 4px 0px var(--black);
+  --shadow-comic-sm: 2px 2px 0px var(--black);
+
+  /* 小程序使用系统字体作为回退 */
+  --font-display: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-comic: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ============================================================
+   GLOBAL RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+page {
+  font-family: var(--font-body);
+  background: #F0EDE0;
+  color: var(--black);
+}
+
+/* 小程序不支持 focus-visible，使用简化的 focus 样式 */
+:focus { outline: 2px solid var(--blue); }
+
+/* ============================================================
+   APP CONTAINER — 小程序全宽，H5 由 app.h5.scss 覆写为 375px
+   ============================================================ */
+#app {
+  width: 100%;
+}
+
+.app-phone-frame {
+  width: 100%;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-phone-content {
+  flex: 1;
+  padding: 32px 18px 16px;
+  position: relative;
+  overflow-y: auto;
+}
+
+.status-bar-spacer { height: 32rpx; }
+
+/* ============================================================
+   SHARED COMIC COMPONENTS
+   ============================================================ */
+
+/* Comic panel card */
+.comic-card {
+  background: var(--card-bg);
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-comic);
+  position: relative;
+  margin-bottom: 14px;
+}
+.comic-card.dashed { border-style: dashed; }
+
+/* Bold comic button */
+.comic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 24px;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  box-shadow: var(--shadow-comic-sm);
+  transition: all 0.1s ease;
+  letter-spacing: 1px;
+  position: relative;
+  text-decoration: none;
+  color: var(--black);
+  background: white;
+  line-height: 1;
+}
+.comic-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+.comic-btn.primary { background: var(--blue); color: white; }
+.comic-btn.yellow { background: var(--yellow); }
+.comic-btn.red { background: var(--red); color: white; }
+.comic-btn.green { background: var(--green); color: white; }
+.comic-btn.outline { background: white; }
+.comic-btn.sm { font-size: 0.78rem; padding: 6px 14px; }
+.comic-btn.lg { font-size: 1.2rem; padding: 14px 32px; }
+
+/* Badge */
+.badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--black);
+  background: white;
+}
+.badge.hot { background: var(--red); color: white; }
+
+/* Speech Bubble */
+.speech-bubble {
+  position: relative;
+  background: white;
+  border: var(--border-w) solid var(--black);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-comic-sm);
+}
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 30px;
+  width: 18px; height: 18px;
+  background: white;
+  border-right: var(--border-w) solid var(--black);
+  border-bottom: var(--border-w) solid var(--black);
+  transform: rotate(45deg);
+}
+
+/* Progress Bar */
+.progress-bar {
+  height: 10px;
+  background: var(--gray-light);
+  border: 2px solid var(--black);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.4s ease;
+}
+.progress-bar .fill.blue { background: var(--blue); }
+.progress-bar .fill.green { background: var(--green); }
+.progress-bar .fill.yellow { background: var(--yellow); }
+
+/* Page header */
+.page-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--black);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes comboPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes bubble-up {
+  0% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) translateX(12px) scale(0.3); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+
+.animate-bounce-in { animation: bounceIn 0.5s ease; }
+.animate-shake { animation: shake 0.5s ease; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease; }
+.animate-pulse { animation: pulse 1s ease infinite; }
+.animate-slide-down { animation: slideDown 0.3s ease; }
+.animate-combo { animation: comboPop 0.3s ease; }
+.float { animation: float 3s ease-in-out infinite; }

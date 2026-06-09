@@ -25,3 +25,18 @@ build/
 
 # Logs
 *.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# Taro
+frontend/.taro-cache/
+frontend/.swc/
+frontend/dist/
+frontend/dist-h5/
+frontend/project.private.config.json

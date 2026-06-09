@@ -1,0 +1,70 @@
+{
+  "name": "ai-quiz-frontend",
+  "version": "0.1.0",
+  "description": "AI Quiz Platform - Taro Frontend",
+  "private": true,
+  "templateInfo": {
+    "name": "default",
+    "typescript": true,
+    "css": "sass"
+  },
+  "scripts": {
+    "dev:h5": "npm run build:h5 -- --watch",
+    "build:h5": "taro build --type h5",
+    "dev:weapp": "npm run build:weapp -- --watch",
+    "build:weapp": "taro build --type weapp && bash scripts/post-build-weapp.sh",
+    "dev:swan": "npm run build:swan -- --watch",
+    "build:swan": "taro build --type swan",
+    "dev:alipay": "npm run build:alipay -- --watch",
+    "build:alipay": "taro build --type alipay",
+    "dev:tt": "npm run build:tt -- --watch",
+    "build:tt": "taro build --type tt",
+    "dev:qq": "npm run build:qq -- --watch",
+    "build:qq": "taro build --type qq",
+    "dev:jd": "npm run build:jd -- --watch",
+    "build:jd": "taro build --type jd"
+  },
+  "browserslist": [
+    "last 3 versions",
+    "Android >= 4.1",
+    "ios >= 8"
+  ],
+  "dependencies": {
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
+    "@tarojs/components": "4.2.0",
+    "@tarojs/helper": "4.2.0",
+    "@tarojs/plugin-framework-react": "4.2.0",
+    "@tarojs/plugin-platform-h5": "4.2.0",
+    "@tarojs/plugin-platform-weapp": "4.2.0",
+    "@tarojs/react": "4.2.0",
+    "@tarojs/runtime": "4.2.0",
+    "@tarojs/shared": "4.2.0",
+    "@tarojs/taro": "4.2.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.0",
+    "@babel/plugin-proposal-class-properties": "7.14.5",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/preset-react": "^7.24.0",
+    "@babel/preset-typescript": "^7.24.0",
+    "@tarojs/cli": "4.2.0",
+    "@tarojs/webpack5-runner": "4.2.0",
+    "@types/react": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "babel-preset-taro": "4.2.0",
+    "eslint": "^8.12.0",
+    "eslint-config-taro": "4.2.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-react": "^7.8.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "null-loader": "^4.0.1",
+    "sass": "^1.56.0",
+    "stylelint": "^14.4.0",
+    "typescript": "^5.1.0",
+    "webpack": "5.91.0"
+  }
+}
