@@ -9,6 +9,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
+  overflow-x: hidden;   /* prevent card overflow in mini-program */
 }
 
 /* ── Top Bar ─────────────────────────────────────────── */
@@ -123,6 +124,10 @@
   box-shadow: var(--shadow-comic);
   margin-bottom: 12px;
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;       /* explicit for mini-program WXSS compat */
+  overflow: hidden;             /* contain any overflow from child text */
 }
 
 .question-type-badge {
@@ -144,6 +149,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.5;
+  word-break: break-all;  /* mini-program compat */
 }
 
 .question-timer {
@@ -179,6 +185,8 @@
   box-shadow: var(--shadow-comic-sm);
   transition: all 0.1s;
   font-size: 0.88rem;
+  box-sizing: border-box;
+  word-break: break-all;  /* mini-program compat */
 }
 
 .option-btn:active {
@@ -280,6 +288,10 @@
   box-shadow: var(--shadow-comic-sm);
   font-size: 0.8rem;
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;       /* explicit for mini-program WXSS compat */
+  overflow: hidden;             /* contain any overflow from child text */
 }
 
 .explanation-card.wrong {
@@ -295,6 +307,7 @@
 .explanation-card .exp-text {
   font-size: 0.78rem;
   line-height: 1.5;
+  word-break: break-all;  /* mini-program compat */
 }
 
 .correct-highlight {
@@ -315,6 +328,7 @@
 .mascot-feedback .speech-bubble {
   flex: 1;
   font-size: 0.78rem;
+  word-break: break-all;  /* mini-program compat */
 }
 
 /* ── Speed Lines ─────────────────────────────────────── */
@@ -339,6 +353,8 @@
 
 /* ── Next Button ─────────────────────────────────────── */
 .next-btn {
+  display: flex;        /* override inline-flex → block-level for width:100% */
+  box-sizing: border-box;
   width: 100%;
   margin-top: 10px;
 }
@@ -361,6 +377,9 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-comic);
   margin-top: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;       /* explicit for mini-program WXSS compat */
 }
 
 .quiz-complete-banner .complete-title {

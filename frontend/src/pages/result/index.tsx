@@ -240,7 +240,7 @@ export default function ResultPage() {
         {/* === Bottom Retry === */}
         <View
           className="comic-btn primary"
-          style={{ width: "100%", marginBottom: "16px" }}
+          style={{ display: "flex", width: "100%", maxWidth: "100%", boxSizing: "border-box", marginBottom: "16px" }}
           onClick={handleRetry}
         >
           <Text>🔄 再来一局</Text>

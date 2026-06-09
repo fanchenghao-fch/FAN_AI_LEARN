@@ -32,6 +32,7 @@ async def generate_quiz(request: QuizGenerateRequest):
     """Generate quiz questions from user knowledge input.
 
     Returns SSE stream with progress updates and final quiz data.
+    (H5/web clients only — mini-program clients use /generate-sync.)
 
     Events:
         - progress: {stage, message} — generation progress
@@ -105,6 +106,59 @@ async def generate_quiz(request: QuizGenerateRequest):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@router.post("/generate-sync")
+async def generate_quiz_sync(request: QuizGenerateRequest):
+    """Generate quiz questions — synchronous JSON response.
+
+    Used by WeChat Mini Program (which cannot consume SSE streams via
+    wx.request).  Runs the same generation + validation chains as the
+    SSE endpoint but returns a single JSON payload.
+
+    Returns:
+        JSON object with quiz_id, title, knowledge_domain, questions,
+        and validation.  On error returns APIResponse with code=500.
+    """
+    try:
+        # Stage 1: Generate questions (non-streaming)
+        gen_chain = create_quiz_generation_chain(streaming=False)
+        gen_input = build_generation_input(
+            knowledge_input=request.knowledge_input,
+            question_count=request.question_count,
+            question_types=request.question_types,
+            difficulty=request.difficulty,
+        )
+
+        full_output = await gen_chain.ainvoke(gen_input)
+        quiz_output = QuizOutput(**full_output)
+
+        # Stage 2: Validate questions
+        questions_dict = [q.model_dump() for q in quiz_output.questions]
+        val_chain = create_validation_chain()
+        val_input = build_validation_input(questions_dict)
+        validation_result = await val_chain.ainvoke(val_input)
+
+        # Stage 3: Return result
+        quiz_id = f"quiz_{uuid.uuid4().hex[:12]}"
+
+        return APIResponse(
+            code=0,
+            message="ok",
+            data={
+                "quiz_id": quiz_id,
+                "title": quiz_output.title,
+                "knowledge_domain": quiz_output.knowledge_domain,
+                "questions": [q.model_dump() for q in quiz_output.questions],
+                "validation": validation_result,
+            },
+        )
+
+    except Exception as e:
+        return APIResponse(
+            code=500,
+            message=f"题目生成失败: {str(e)}",
+        )
 
 
 @router.post("/analyze")

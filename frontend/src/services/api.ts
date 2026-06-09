@@ -276,6 +276,7 @@ function parseSSEBuffer(
       const raw = line.slice(6);
       try {
         const parsed = JSON.parse(raw);
+        console.log("[SSE] event parsed:", state.currentEvent, state.currentEvent === "result" ? "(RESULT)" : "");
         switch (state.currentEvent) {
           case "progress":
             callbacks.onProgress?.(parsed as SSEProgressEvent);
@@ -291,7 +292,13 @@ function parseSSEBuffer(
             break;
         }
       } catch {
-        // Unparseable JSON — skip silently (could be a partial chunk artifact)
+        // Log parse failures so we can diagnose SSE data issues
+        console.error(
+          "[SSE] JSON parse FAILED — currentEvent:",
+          state.currentEvent,
+          "raw preview:",
+          raw.substring(0, 200),
+        );
       }
     }
   }
@@ -368,17 +375,20 @@ function generateQuizStreamWeb(
   return controller;
 }
 
-// ── Mini-Program Implementation (wx.request + enableChunked) ──
+// ── Mini-Program Implementation (sync JSON endpoint) ─────
+//
+// WeChat Mini Program's wx.request cannot consume SSE streams
+// (ReadableStream / chunked transfer doesn't work reliably through
+// the DevTools proxy).  Instead we call a dedicated synchronous
+// endpoint that runs the full generation + validation chain and
+// returns a single JSON response with quiz data.
 
 function generateQuizStreamMini(
   request: QuizGenerateRequest,
   callbacks: SSECallbacks,
 ): AbortController {
   const controller = new AbortController();
-
-  let buffer = "";
-  const state: SSEParseState = { currentEvent: "" };
-  let settled = false; // prevent double-calling onError/onDone
+  let settled = false;
 
   const doneSettled = () => {
     if (settled) return true;
@@ -386,36 +396,25 @@ function generateQuizStreamMini(
     return false;
   };
 
+  // Synthetic progress events to drive the loading page UI steps
+  console.log("[Quiz] starting sync generate request");
+  callbacks.onProgress?.({ stage: "generating", message: "正在分析知识点..." });
+
   const requestTask = wx.request({
-    url: `${API_BASE}/api/quiz/generate`,
+    url: `${API_BASE}/api/quiz/generate-sync`,
     method: "POST",
     header: {
       "Content-Type": "application/json",
-      Accept: "text/event-stream",
     },
     data: request,
-    enableChunked: true,
-    responseType: "arraybuffer",
-
-    onChunkReceived: (res: { data: ArrayBuffer }) => {
-      if (controller.signal.aborted) {
-        requestTask.abort();
-        return;
-      }
-
-      // Decode the ArrayBuffer chunk to a UTF-8 string
-      const text = arrayBufferToUtf8(res.data);
-      buffer += text;
-
-      // Parse any complete SSE events out of the buffer
-      buffer = parseSSEBuffer(buffer, callbacks, state);
-    },
+    timeout: 180000,  // 3 min — LLM generation can take 60-120 s
+    responseType: "arraybuffer",  // binary avoids text-truncation in DevTools proxy
 
     success: (res) => {
       if (controller.signal.aborted || doneSettled()) return;
 
-      // Check HTTP status
       if (res.statusCode < 200 || res.statusCode >= 300) {
+        console.error("[Quiz] HTTP error:", res.statusCode);
         callbacks.onError?.(
           `HTTP ${res.statusCode}`,
           "服务端返回错误状态码",
@@ -423,24 +422,36 @@ function generateQuizStreamMini(
         return;
       }
 
-      // Flush any remaining data in the buffer (chunked case)
-      if (buffer.trim()) {
-        buffer = parseSSEBuffer(buffer + "\n", callbacks, state);
+      // Decode response data
+      const rawText =
+        typeof res.data === "string" ? res.data : arrayBufferToUtf8(res.data as ArrayBuffer);
+
+      let payload: { code: number; message: string; data?: Record<string, unknown> };
+      try {
+        payload = JSON.parse(rawText);
+      } catch (e) {
+        console.error("[Quiz] JSON parse error:", e);
+        callbacks.onError?.("数据解析失败", String(e));
+        return;
       }
 
-      // Fallback: if no chunks arrived (enableChunked unsupported by old
-      // base library), process the full response body from res.data
-      if (!buffer && res.data) {
-        const fullText =
-          typeof res.data === "string"
-            ? res.data
-            : arrayBufferToUtf8(res.data as ArrayBuffer);
-        parseSSEBuffer(fullText + "\n", callbacks, state);
+      // Check API-level error
+      if (payload.code !== 0 || !payload.data) {
+        console.error("[Quiz] API error:", payload.message);
+        callbacks.onError?.(payload.message || "未知错误");
+        return;
       }
+
+      // Signal validating progress, then deliver result
+      callbacks.onProgress?.({ stage: "validating", message: "正在校验题目准确性..." });
+
+      console.log("[Quiz] quiz generated:", payload.data.quiz_id);
+      callbacks.onResult?.(payload.data as unknown as SSEGenerateResult);
     },
 
     fail: (err) => {
       if (controller.signal.aborted || doneSettled()) return;
+      console.error("[Quiz] request failed:", err.errMsg);
       callbacks.onError?.("网络请求失败", err.errMsg);
     },
   });
