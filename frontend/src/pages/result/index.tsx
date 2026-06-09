@@ -3,10 +3,12 @@
  *
  * Faithful reproduction of PAGES 7/8 from 01-核心业务流程.html prototype.
  * Shows scorecard, mastery radar, AI knowledge summary, and wrong question review.
+ *
+ * Score ring SVG replaced with CSS implementation for WeChat Mini Program compatibility.
  */
 
 import { useCallback } from "react";
-import { View, Text, Button, ScrollView } from "@tarojs/components";
+import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useQuizStore } from "../../stores/quizStore";
@@ -90,6 +92,7 @@ export default function ResultPage() {
 
   const { emoji, label, color } = getGradeInfo(displayResult.accuracy);
   const masteryEntries = Object.entries(displayResult.mastery_radar || {});
+  const accuracyPercent = Math.round(displayResult.accuracy * 100);
 
   return (
     <View className="app-phone-frame">
@@ -101,29 +104,24 @@ export default function ResultPage() {
             <Text style={{ color }}>{label}</Text>
           </View>
 
-          {/* Score Ring */}
+          {/* Score Ring — CSS only */}
           <View className="result-score-ring">
-            <svg viewBox="0 0 120 120" style={{ position: "absolute", inset: 0 }}>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="#E5E7EB" strokeWidth="10" />
-              <circle
-                cx="60"
-                cy="60"
-                r="50"
-                fill="none"
-                stroke={color}
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${displayResult.accuracy * 314} 314`}
-                transform="rotate(-90 60 60)"
-              />
-            </svg>
-            <Text className="score-text">{displayResult.score}/{displayResult.total_questions}</Text>
+            <View
+              className="score-ring-css"
+              style={{ borderColor: color }}
+            >
+              <View className="score-ring-inner">
+                <Text className="score-text" style={{ color }}>
+                  {displayResult.score}/{displayResult.total_questions}
+                </Text>
+              </View>
+            </View>
           </View>
 
           {/* Stats Row */}
           <View className="result-stats">
             <View className="result-stat">
-              <Text className="stat-val">{Math.round(displayResult.accuracy * 100)}%</Text>
+              <Text className="stat-val">{accuracyPercent}%</Text>
               <Text className="stat-label">正确率</Text>
             </View>
             <View className="result-stat">
@@ -147,12 +145,12 @@ export default function ResultPage() {
 
         {/* === Actions === */}
         <View className="result-actions">
-          <Button className="comic-btn primary" onClick={handleRetry}>
+          <View className="comic-btn primary" onClick={handleRetry}>
             <Text>再来一局</Text>
-          </Button>
-          <Button className="comic-btn outline" onClick={handleShare}>
+          </View>
+          <View className="comic-btn outline" onClick={handleShare}>
             <Text>分享成绩</Text>
-          </Button>
+          </View>
         </View>
 
         {/* === Divider === */}
@@ -240,13 +238,13 @@ export default function ResultPage() {
         </View>
 
         {/* === Bottom Retry === */}
-        <Button
+        <View
           className="comic-btn primary"
           style={{ width: "100%", marginBottom: "16px" }}
           onClick={handleRetry}
         >
           <Text>🔄 再来一局</Text>
-        </Button>
+        </View>
       </ScrollView>
     </View>
   );

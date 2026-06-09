@@ -4,6 +4,8 @@
  * Faithful reproduction of PAGE 2/8 from 01-核心业务流程.html prototype.
  * Shows loading animation with mascot, cauldron, and progress steps.
  * Handles SSE stream for quiz generation.
+ *
+ * All SVG icons replaced with emoji/CSS for WeChat Mini Program compatibility.
  */
 
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -142,9 +144,8 @@ export default function LoadingPage() {
     Taro.navigateBack();
   }, [setGenerating]);
 
-  // Update simulate step progress for demo when not using real API
+  // Auto-progress steps for visual demo if SSE hasn't updated them
   useEffect(() => {
-    // Auto-progress steps for visual demo if SSE hasn't updated them
     const timers = [
       setTimeout(() => updateStep("analyze", "done"), 1500),
       setTimeout(() => { updateStep("analyze", "done"); updateStep("search", "current"); }, 2000),
@@ -183,19 +184,11 @@ export default function LoadingPage() {
             {steps.map((step) => (
               <View key={step.id} className={`loading-step ${step.status}`}>
                 {step.status === "done" ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  <Text className="step-icon done">✅</Text>
                 ) : step.status === "current" ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round">
-                    <circle cx="12" cy="12" r="5" />
-                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                  </svg>
+                  <View className="step-spinner" />
                 ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
+                  <Text className="step-icon pending">⏳</Text>
                 )}
                 <Text>{step.label}</Text>
               </View>
@@ -204,10 +197,7 @@ export default function LoadingPage() {
 
           {/* Cool Fact Tips */}
           <View className="loading-tips">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#FBBF24" stroke="#1E1E1E" strokeWidth="1.5" strokeLinecap="round" style={{ verticalAlign: "-3px" }}>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <circle cx="12" cy="17" r=".5" fill="#1E1E1E" />
-            </svg>
+            <Text className="tips-emoji">💡</Text>
             <Text style={{ fontWeight: 700 }}> 灯灯冷知识：</Text>
             <Text>{coolFacts[tipsRotation]}</Text>
           </View>

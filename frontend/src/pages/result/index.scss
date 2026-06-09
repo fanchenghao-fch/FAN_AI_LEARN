@@ -6,6 +6,7 @@
 .result-page {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 /* ── Result Hero ─────────────────────────────────────── */
@@ -31,6 +32,29 @@
   width: 120px;
   height: 120px;
   margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CSS-only score ring (replaces SVG) */
+.score-ring-css {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 8px solid var(--gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: border-color 0.4s ease;
+}
+
+.score-ring-inner {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: var(--paper);
   display: flex;
   align-items: center;
   justify-content: center;

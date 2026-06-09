@@ -6,7 +6,8 @@
 .loading-page {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .loading-hero {
@@ -98,8 +99,31 @@
   background: rgba(37, 99, 235, 0.05);
 }
 
-.loading-step.current svg {
-  animation: sparkle 0.8s ease infinite;
+/* Step icons — emoji replacements */
+.step-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* CSS spinner for "current" step */
+.step-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid var(--gray-light);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.tips-emoji {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 /* ── Tips ────────────────────────────────────────────── */

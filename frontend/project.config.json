@@ -5,8 +5,8 @@
   "appid": "wxb13a91c58faaf403",
   "setting": {
     "urlCheck": true,
-    "es6": false,
-    "enhance": false,
+    "es6": true,
+    "enhance": true,
     "compileHotReLoad": false,
     "postcss": false,
     "minified": false,
@@ -36,5 +36,5 @@
     "include": []
   },
   "editorSetting": {},
-  "libVersion": "3.16.1"
+  "libVersion": "3.14.0"
 }

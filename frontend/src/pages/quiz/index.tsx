@@ -6,10 +6,12 @@
  * - ④ 判断题答题 (True/False Question)
  * - ⑤ 答对反馈 + 知识讲解 (Correct Feedback)
  * - ⑥ 答错反馈 + 错题讲解 (Wrong Feedback)
+ *
+ * All SVG icons replaced with emoji for WeChat Mini Program compatibility.
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { View, Text, Button } from "@tarojs/components";
+import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useQuizStore } from "../../stores/quizStore";
@@ -22,25 +24,20 @@ import "./index.scss";
 
 // ── Sub-components ──────────────────────────────────────────
 
-/** Life Potion SVG icon (from prototype) */
+/** Life Potion icon — emoji replacement for SVG */
 function LifePotion({ lost = false }: { lost?: boolean }) {
   return (
-    <svg className={`life-icon${lost ? " lost" : ""}`} width="22" height="22" viewBox="0 0 24 24">
-      <rect x="4" y="2" width="16" height="4" rx="1" fill="#FBBF24" stroke="#1E1E1E" strokeWidth="1.5" />
-      <rect x="7" y="6" width="10" height="14" rx="3" fill="#FBBF24" stroke="#1E1E1E" strokeWidth="1.5" />
-      <circle cx="10" cy="12" r="2" fill="#FEF3C7" />
-    </svg>
+    <Text className={`life-icon${lost ? " lost" : ""}`}>
+      {lost ? "🫗" : "🧪"}
+    </Text>
   );
 }
 
-/** Close/X icon button */
+/** Close/X icon button — emoji replacement */
 function ExitButton({ onClick }: { onClick: () => void }) {
   return (
     <View className="exit-btn" onClick={onClick}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
+      <Text className="exit-icon">✕</Text>
     </View>
   );
 }
@@ -239,10 +236,7 @@ export default function QuizPage() {
           </View>
           <Text className="question-text">{currentQuestion.content}</Text>
           <View className="question-timer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ verticalAlign: "-3px" }}>
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
+            <Text className="timer-icon">⏱️</Text>
             <Text>本题用时 {timer.elapsed}s</Text>
           </View>
         </View>
@@ -282,9 +276,7 @@ export default function QuizPage() {
                   </View>
                   <Text>{opt.text}</Text>
                   {showExplanation && opt.key === currentQuestion.correct_answer && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" style={{ marginLeft: "auto" }}>
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                    <Text className="opt-check">✅</Text>
                   )}
                 </View>
               );
@@ -360,25 +352,23 @@ export default function QuizPage() {
 
         {/* === Action Row === */}
         {showExplanation ? (
-          <Button
-            className="comic-btn primary next-btn"
-            onClick={handleNext}
-            loading={isAnalyzing}
+          <View
+            className={`comic-btn primary next-btn${isAnalyzing ? " loading" : ""}`}
+            onClick={() => { if (!isAnalyzing) handleNext(); }}
           >
-            <Text>{isCompleted ? "查看分析报告" : "下一题"}</Text>
-          </Button>
+            <Text>{isAnalyzing ? "分析中..." : isCompleted ? "查看分析报告" : "下一题"}</Text>
+          </View>
         ) : (
           <View className="action-row">
-            <Button className="comic-btn outline sm" onClick={handleSkip}>
+            <View className="comic-btn outline sm" onClick={handleSkip}>
               <Text>跳过</Text>
-            </Button>
-            <Button
-              className="comic-btn outline sm"
-              onClick={goToPrevQuestion}
-              disabled={currentIndex === 0}
+            </View>
+            <View
+              className={`comic-btn outline sm${currentIndex === 0 ? " disabled" : ""}`}
+              onClick={() => { if (currentIndex > 0) goToPrevQuestion(); }}
             >
               <Text>上一题</Text>
-            </Button>
+            </View>
           </View>
         )}
       </View>

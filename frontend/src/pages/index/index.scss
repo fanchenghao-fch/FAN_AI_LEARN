@@ -6,6 +6,8 @@
 .page1 {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .status-bar-spacer { height: 16px; }
@@ -24,6 +26,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.logo-icon {
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
 /* ── Badge ───────────────────────────────────────────── */
@@ -110,6 +117,8 @@
 
 .knowledge-textarea {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 2px dashed var(--gray);
   border-radius: var(--radius-sm);
   padding: 10px;
@@ -120,6 +129,7 @@
   min-height: 60px;
   transition: border-color 0.2s;
   resize: none;
+  overflow: hidden;
 }
 
 .knowledge-textarea:focus {
@@ -129,35 +139,49 @@
 
 .input-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-top: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+.attach-emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.section-icon {
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .attach-btn {
-  display: flex !important;
+  display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.75rem !important;
-  padding: 10px 14px !important;
+  font-size: 0.7rem;
+  padding: 8px 10px;
   min-height: 44px;
-  background: white !important;
-  border: 2px solid var(--black) !important;
-  border-radius: 20px !important;
-  cursor: pointer;
-  font-family: var(--font-body) !important;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: 20px;
+  font-family: var(--font-body);
   box-shadow: var(--shadow-comic-sm);
-  transition: all 0.1s;
-  line-height: 1 !important;
-  margin: 0 !important;
+  line-height: 1;
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
 }
 
-.attach-btn::after {
-  border: none !important;
+.attach-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 /* ── Generate Button ─────────────────────────────────── */
 .generate-btn {
+  display: flex;           /* override inline-flex → block-level in mini-program */
+  box-sizing: border-box;  /* ensure padding+border included in 100% width */
   width: 100%;
   margin-bottom: 12px;
 }
@@ -233,9 +257,11 @@
 .nav-bar {
   display: flex;
   justify-content: space-around;
-  padding: 8px 0 0;
+  padding: 10px 0;
   border-top: 2px solid var(--black);
   margin-top: auto;
+  background: var(--paper);
+  flex-shrink: 0;
 }
 
 .nav-item {
@@ -245,11 +271,12 @@
   gap: 2px;
   font-size: 0.75rem;
   color: var(--gray);
-  cursor: pointer;
+  padding: 4px 12px;
 }
 
 .nav-item.active {
   color: var(--blue);
+  font-weight: 700;
 }
 
 .nav-icon-svg {

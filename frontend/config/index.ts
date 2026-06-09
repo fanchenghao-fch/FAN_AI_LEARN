@@ -24,6 +24,7 @@ export default defineConfig<"webpack5">(async (merge, { command, mode }) => {
       "@tarojs/plugin-platform-h5",
       "@tarojs/plugin-platform-weapp",
       "@tarojs/plugin-framework-react",
+      "@tarojs/plugin-html",
     ],
     defineConstants: {},
     copy: {

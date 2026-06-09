@@ -2,10 +2,11 @@
  * Page ①: 首页 · 知识输入
  *
  * Faithful reproduction of PAGE 1/8 from 01-核心业务流程.html prototype.
+ * All SVG icons replaced with emoji for WeChat Mini Program compatibility.
  */
 
 import { useState, useCallback } from "react";
-import { View, Text, Textarea, Button } from "@tarojs/components";
+import { View, Text, Textarea } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import "./index.scss";
@@ -34,10 +35,7 @@ export default function IndexPage() {
         {/* Header */}
         <View className="page1-header">
           <View className="logo">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "-4px" }}>
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
+            <Text className="logo-icon">📖</Text>
             <Text>AI闯关学</Text>
           </View>
           <View className="badge hot">
@@ -67,50 +65,34 @@ export default function IndexPage() {
             className="knowledge-textarea"
           />
           <View className="input-actions">
-            <Button className="attach-btn" onClick={() => handleAttach("文档")}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-              </svg>
+            <View className="attach-btn" onClick={() => handleAttach("文档")}>
+              <Text className="attach-emoji">📄</Text>
               <Text>文档</Text>
-            </Button>
-            <Button className="attach-btn" onClick={() => handleAttach("链接")}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg>
+            </View>
+            <View className="attach-btn" onClick={() => handleAttach("链接")}>
+              <Text className="attach-emoji">🔗</Text>
               <Text>链接</Text>
-            </Button>
-            <Button className="attach-btn" onClick={() => handleAttach("拍照")}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
+            </View>
+            <View className="attach-btn" onClick={() => handleAttach("拍照")}>
+              <Text className="attach-emoji">📷</Text>
               <Text>拍照</Text>
-            </Button>
-            <Button className="attach-btn" onClick={() => handleAttach("语音")}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" y1="19" x2="12" y2="23" />
-                <line x1="8" y1="23" x2="16" y2="23" />
-              </svg>
+            </View>
+            <View className="attach-btn" onClick={() => handleAttach("语音")}>
+              <Text className="attach-emoji">🎤</Text>
               <Text>语音</Text>
-            </Button>
+            </View>
           </View>
         </View>
 
         {/* Generate Button */}
-        <Button className="comic-btn primary lg generate-btn" onClick={handleStartQuiz}>
+        <View className="comic-btn primary lg generate-btn" onClick={handleStartQuiz}>
           <Text>开始闯关</Text>
-        </Button>
+        </View>
 
         {/* Hot Quizzes */}
         <View className="hot-quiz-section">
           <View className="section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#F59E0B" stroke="#1E1E1E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "-3px" }}>
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
+            <Text className="section-icon">⚡</Text>
             <Text>热门闯关</Text>
           </View>
           <View className="hot-quiz-list">
@@ -131,13 +113,21 @@ export default function IndexPage() {
         {/* Bottom Nav */}
         <View className="nav-bar">
           {[
-            { label: "首页", icon: "home", active: true },
-            { label: "发现", icon: "search" },
-            { label: "出题", icon: "plus" },
-            { label: "消息", icon: "message" },
-            { label: "我的", icon: "user" },
+            { label: "首页", active: true },
+            { label: "发现" },
+            { label: "出题" },
+            { label: "消息" },
+            { label: "我的" },
           ].map((item) => (
-            <View key={item.label} className={`nav-item${item.active ? " active" : ""}`}>
+            <View
+              key={item.label}
+              className={`nav-item${item.active ? " active" : ""}`}
+              onClick={() => {
+                if (!item.active) {
+                  Taro.showToast({ title: `${item.label}功能即将上线`, icon: "none" });
+                }
+              }}
+            >
               <Text>{item.label}</Text>
             </View>
           ))}
