@@ -8,7 +8,7 @@ export default defineAppConfig({
   window: {
     backgroundTextStyle: "light",
     navigationBarBackgroundColor: "#FFFBEB",
-    navigationBarTitleText: "AI 闯关学",
+    navigationBarTitleText: "阿拉灯神丁",
     navigationBarTextStyle: "black",
   },
 });

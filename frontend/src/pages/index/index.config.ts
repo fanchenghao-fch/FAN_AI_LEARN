@@ -1,3 +1,3 @@
 export default definePageConfig({
-  navigationBarTitleText: "AI 闯关学",
+  navigationBarTitleText: "阿拉灯神丁",
 });
