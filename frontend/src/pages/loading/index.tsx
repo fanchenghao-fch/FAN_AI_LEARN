@@ -184,11 +184,11 @@ export default function LoadingPage() {
             {steps.map((step) => (
               <View key={step.id} className={`loading-step ${step.status}`}>
                 {step.status === "done" ? (
-                  <Text className="step-icon done">✅</Text>
+                  <View className="step-icon-done"><View className="check-mark" /></View>
                 ) : step.status === "current" ? (
                   <View className="step-spinner" />
                 ) : (
-                  <Text className="step-icon pending">⏳</Text>
+                  <View className="step-icon-pending" />
                 )}
                 <Text>{step.label}</Text>
               </View>
@@ -197,7 +197,7 @@ export default function LoadingPage() {
 
           {/* Cool Fact Tips */}
           <View className="loading-tips">
-            <Text className="tips-emoji">💡</Text>
+            <View className="tips-icon"><View className="bulb-dot" /></View>
             <Text style={{ fontWeight: 700 }}> 灯灯冷知识：</Text>
             <Text>{coolFacts[tipsRotation]}</Text>
           </View>

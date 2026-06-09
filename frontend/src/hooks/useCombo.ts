@@ -24,10 +24,10 @@ export function useCombo() {
    * Get combo milestone label.
    */
   const getComboLabel = useCallback((): string | null => {
-    if (combo >= 10) return `🔥 超级连击 ×${combo}`;
-    if (combo >= 7) return `⚡ 连击 ×${combo}`;
-    if (combo >= 5) return `✨ 连击 ×${combo}`;
-    if (combo >= 3) return `💪 连击 ×${combo}`;
+    if (combo >= 10) return `超级连击 ×${combo}`;
+    if (combo >= 7) return `连击 ×${combo}`;
+    if (combo >= 5) return `连击 ×${combo}`;
+    if (combo >= 3) return `连击 ×${combo}`;
     return null;
   }, [combo]);
 

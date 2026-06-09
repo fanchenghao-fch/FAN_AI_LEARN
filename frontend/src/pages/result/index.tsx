@@ -17,12 +17,12 @@ import "./index.scss";
 
 // ── Helpers ─────────────────────────────────────────────────
 
-function getGradeInfo(accuracy: number): { emoji: string; label: string; color: string } {
-  if (accuracy >= 0.9) return { emoji: "🏆", label: "学霸级！", color: "var(--yellow)" };
-  if (accuracy >= 0.8) return { emoji: "🌟", label: "非常棒！", color: "var(--green)" };
-  if (accuracy >= 0.6) return { emoji: "👍", label: "表现不错！", color: "var(--blue)" };
-  if (accuracy >= 0.4) return { emoji: "💪", label: "继续加油！", color: "var(--orange)" };
-  return { emoji: "📚", label: "需要多练练~", color: "var(--purple)" };
+function getGradeInfo(accuracy: number): { gradeKey: string; label: string; color: string } {
+  if (accuracy >= 0.9) return { gradeKey: "S", label: "学霸级！", color: "var(--yellow)" };
+  if (accuracy >= 0.8) return { gradeKey: "A", label: "非常棒！", color: "var(--green)" };
+  if (accuracy >= 0.6) return { gradeKey: "B", label: "表现不错！", color: "var(--blue)" };
+  if (accuracy >= 0.4) return { gradeKey: "C", label: "继续加油！", color: "var(--orange)" };
+  return { gradeKey: "D", label: "需要多练练~", color: "var(--purple)" };
 }
 
 function getMasteryColor(score: number): string {
@@ -90,7 +90,7 @@ export default function ResultPage() {
     );
   }
 
-  const { emoji, label, color } = getGradeInfo(displayResult.accuracy);
+  const { gradeKey, label, color } = getGradeInfo(displayResult.accuracy);
   const masteryEntries = Object.entries(displayResult.mastery_radar || {});
   const accuracyPercent = Math.round(displayResult.accuracy * 100);
 
@@ -100,7 +100,9 @@ export default function ResultPage() {
         {/* === Result Hero === */}
         <View className="result-hero">
           <View className="result-grade">
-            <Text className="grade-emoji">{emoji}</Text>
+            <View className="grade-badge" style={{ background: color }}>
+              <Text className="grade-key">{gradeKey}</Text>
+            </View>
             <Text style={{ color }}>{label}</Text>
           </View>
 
@@ -160,7 +162,8 @@ export default function ResultPage() {
         {masteryEntries.length > 0 && (
           <View className="mastery-section">
             <View className="summary-header">
-              <Text>📊 掌握度分析</Text>
+              <View className="section-bar blue" />
+              <Text>掌握度分析</Text>
             </View>
             {masteryEntries.map(([dim, score]) => (
               <View key={dim} className="mastery-item">
@@ -184,7 +187,8 @@ export default function ResultPage() {
         {displayResult.knowledge_summary.length > 0 && (
           <View>
             <View className="summary-header">
-              <Text>💡 知识要点总结</Text>
+              <View className="section-bar yellow" />
+              <Text>知识要点总结</Text>
             </View>
             <View className="knowledge-points">
               {displayResult.knowledge_summary.map((point, i) => (
@@ -202,7 +206,7 @@ export default function ResultPage() {
         {/* === Study Suggestion === */}
         {displayResult.study_suggestion && (
           <View className="study-suggestion-card">
-            <Text className="sug-icon">🎯</Text>
+            <View className="sug-icon-css"><View className="target-dot" /></View>
             <Text className="sug-text">{displayResult.study_suggestion}</Text>
           </View>
         )}
@@ -210,12 +214,13 @@ export default function ResultPage() {
         {/* === Wrong Question Review === */}
         <View className="wrong-review-section">
           <View className="summary-header">
-            <Text>❌ 错题回顾</Text>
+            <View className="section-bar red" />
+            <Text>错题回顾</Text>
           </View>
 
           {displayResult.wrong_questions.length === 0 ? (
             <View className="empty-wrong">
-              <Text className="empty-icon">🎉</Text>
+              <View className="empty-star" />
               <Text className="empty-text">全部答对！你太厉害了！</Text>
             </View>
           ) : (
@@ -243,7 +248,7 @@ export default function ResultPage() {
           style={{ display: "flex", width: "100%", maxWidth: "100%", boxSizing: "border-box", marginBottom: "16px" }}
           onClick={handleRetry}
         >
-          <Text>🔄 再来一局</Text>
+          <Text>再来一局</Text>
         </View>
       </ScrollView>
     </View>

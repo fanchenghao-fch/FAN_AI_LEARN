@@ -24,9 +24,24 @@
   margin-bottom: 8px;
 }
 
-.grade-emoji {
-  font-size: 2.5rem;
-  display: block;
+/* CSS grade badge — colored circle with rank letter */
+.grade-badge {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 6px;
+  box-shadow: var(--shadow-comic-sm);
+}
+
+.grade-key {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 1px 1px 0 var(--black);
 }
 
 .result-score-ring {
@@ -132,14 +147,16 @@
 }
 
 .section-divider::after {
-  content: '📖';
+  content: '';
   position: absolute;
-  top: -12px;
+  top: -8px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--paper);
-  padding: 0 8px;
-  font-size: 0.9rem;
+  width: 20px; height: 4px;
+  background: var(--gray-light);
+  border-radius: 2px;
+  box-shadow: 0 6px 0 var(--gray-light), 0 12px 0 var(--gray-light);
+  padding: 0;
 }
 
 /* ── Knowledge Summary ────────────────────────────────── */
@@ -151,6 +168,18 @@
   align-items: center;
   gap: 6px;
 }
+
+/* Section title colored bar (replaces emoji) */
+.section-bar {
+  width: 4px; height: 18px;
+  border-radius: 2px;
+  background: var(--gray);
+  border: 1.5px solid var(--black);
+  flex-shrink: 0;
+}
+.section-bar.blue   { background: var(--blue); }
+.section-bar.yellow { background: var(--yellow); }
+.section-bar.red    { background: var(--red); }
 
 .knowledge-points {
   display: flex;
@@ -293,9 +322,23 @@
   overflow: hidden;             /* contain any overflow from child text */
 }
 
-.study-suggestion-card .sug-icon {
-  font-size: 1.2rem;
+/* CSS target icon (replaces 🎯) */
+.study-suggestion-card .sug-icon-css {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid var(--black);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+}
+
+.sug-icon-css .target-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 1.5px solid var(--black);
 }
 
 .study-suggestion-card .sug-text {
@@ -311,10 +354,24 @@
   color: var(--gray);
 }
 
-.empty-wrong .empty-icon {
-  font-size: 2rem;
-  display: block;
-  margin-bottom: 8px;
+/* CSS star shape (replaces 🎉) */
+.empty-wrong .empty-star {
+  width: 36px; height: 36px;
+  background: var(--yellow);
+  border: 2.5px solid var(--black);
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  position: relative;
+  box-shadow: var(--shadow-comic-sm);
+}
+.empty-star::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 8px;
+  width: 12px; height: 12px;
+  background: white;
+  border-radius: 50%;
+  border: 2px solid var(--black);
 }
 
 .empty-wrong .empty-text {

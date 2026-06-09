@@ -53,16 +53,34 @@
   gap: 3px;
 }
 
-.life-icon {
-  font-size: 1.1rem;
-  line-height: 1;
-  display: inline-block;
+.potion-icon {
+  width: 18px; height: 24px;
+  border-radius: 9px 9px 4px 4px;
+  border: 2px solid var(--black);
+  background: var(--green-light);
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-comic-sm);
   transition: all 0.3s;
+  display: inline-block;
+  overflow: hidden;
 }
 
-.life-icon.lost {
+.potion-liquid {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60%;
+  background: var(--green);
+  border-radius: 0 0 3px 3px;
+}
+
+.potion-icon.lost {
   opacity: 0.2;
   transform: scale(0.8);
+  background: var(--gray-light);
+}
+.potion-icon.lost .potion-liquid {
+  background: var(--gray);
 }
 
 /* ── Progress ────────────────────────────────────────── */
@@ -215,8 +233,23 @@
 
 .opt-check {
   margin-left: auto;
-  font-size: 1rem;
-  line-height: 1;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* CSS checkmark — rotated rectangle */
+.check-mark {
+  width: 6px; height: 12px;
+  border-right: 2.5px solid white;
+  border-bottom: 2.5px solid white;
+  transform: rotate(45deg);
+  margin-top: -2px;
 }
 
 .opt-key {

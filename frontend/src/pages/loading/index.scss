@@ -99,10 +99,31 @@
   background: rgba(37, 99, 235, 0.05);
 }
 
-/* Step icons — emoji replacements */
-.step-icon {
-  font-size: 1rem;
-  line-height: 1;
+/* Step icons — CSS drawn */
+.step-icon-done {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-icon-done .check-mark {
+  width: 5px; height: 10px;
+  border-right: 2.5px solid white;
+  border-bottom: 2.5px solid white;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
+
+.step-icon-pending {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--gray);
+  background: transparent;
   flex-shrink: 0;
 }
 
@@ -121,9 +142,24 @@
   to { transform: rotate(360deg); }
 }
 
-.tips-emoji {
-  font-size: 1rem;
-  line-height: 1;
+/* CSS bulb icon */
+.tips-icon {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 2px solid var(--black);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  vertical-align: middle;
+}
+
+.tips-icon .bulb-dot {
+  width: 5px; height: 5px;
+  background: var(--black);
+  border-radius: 50%;
 }
 
 /* ── Tips ────────────────────────────────────────────── */

@@ -35,7 +35,9 @@ export default function IndexPage() {
         {/* Header */}
         <View className="page1-header">
           <View className="logo">
-            <Text className="logo-icon">📖</Text>
+            <View className="logo-icon-css">
+              <View className="logo-book-page" />
+            </View>
             <Text>阿拉灯神丁</Text>
           </View>
           <View className="badge hot">
@@ -66,19 +68,19 @@ export default function IndexPage() {
           />
           <View className="input-actions">
             <View className="attach-btn" onClick={() => handleAttach("文档")}>
-              <Text className="attach-emoji">📄</Text>
+              <View className="attach-icon doc" />
               <Text>文档</Text>
             </View>
             <View className="attach-btn" onClick={() => handleAttach("链接")}>
-              <Text className="attach-emoji">🔗</Text>
+              <View className="attach-icon link" />
               <Text>链接</Text>
             </View>
             <View className="attach-btn" onClick={() => handleAttach("拍照")}>
-              <Text className="attach-emoji">📷</Text>
+              <View className="attach-icon photo" />
               <Text>拍照</Text>
             </View>
             <View className="attach-btn" onClick={() => handleAttach("语音")}>
-              <Text className="attach-emoji">🎤</Text>
+              <View className="attach-icon voice" />
               <Text>语音</Text>
             </View>
           </View>
@@ -92,7 +94,7 @@ export default function IndexPage() {
         {/* Hot Quizzes */}
         <View className="hot-quiz-section">
           <View className="section-title">
-            <Text className="section-icon">⚡</Text>
+            <View className="section-bar" />
             <Text>热门闯关</Text>
           </View>
           <View className="hot-quiz-list">

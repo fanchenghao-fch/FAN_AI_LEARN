@@ -24,12 +24,12 @@ import "./index.scss";
 
 // ── Sub-components ──────────────────────────────────────────
 
-/** Life Potion icon — emoji replacement for SVG */
+/** Life Potion icon — CSS capsule shape */
 function LifePotion({ lost = false }: { lost?: boolean }) {
   return (
-    <Text className={`life-icon${lost ? " lost" : ""}`}>
-      {lost ? "🫗" : "🧪"}
-    </Text>
+    <View className={`potion-icon${lost ? " lost" : ""}`}>
+      <View className="potion-liquid" />
+    </View>
   );
 }
 
@@ -224,7 +224,7 @@ export default function QuizPage() {
         <View className="combo-indicator">
           {combo >= 3 && (
             <Text className="combo-count">
-              🔥 连击 ×{combo}
+              连击 ×{combo}
             </Text>
           )}
         </View>
@@ -276,7 +276,7 @@ export default function QuizPage() {
                   </View>
                   <Text>{opt.text}</Text>
                   {showExplanation && opt.key === currentQuestion.correct_answer && (
-                    <Text className="opt-check">✅</Text>
+                    <View className="opt-check"><View className="check-mark" /></View>
                   )}
                 </View>
               );
@@ -291,13 +291,13 @@ export default function QuizPage() {
               className={`truefalse-btn t-btn${selectedAnswer === "正确" ? " selected" : ""}`}
               onClick={() => handleSelectTF("正确")}
             >
-              <Text>✅ 正确</Text>
+              <Text>正确</Text>
             </View>
             <View
               className={`truefalse-btn f-btn${selectedAnswer === "错误" ? " selected" : ""}`}
               onClick={() => handleSelectTF("错误")}
             >
-              <Text>❌ 错误</Text>
+              <Text>错误</Text>
             </View>
           </View>
         )}
@@ -307,7 +307,7 @@ export default function QuizPage() {
           <>
             <View className={`explanation-card${lastAnswerCorrect ? "" : " wrong"}`}>
               <Text className="exp-title">
-                {lastAnswerCorrect ? "✅ 回答正确！" : "❌ 回答错误"}
+                {lastAnswerCorrect ? "回答正确！" : "回答错误"}
               </Text>
               <Text className="exp-text">
                 {currentQuestion.explanation}
@@ -334,7 +334,7 @@ export default function QuizPage() {
 
             {!lastAnswerCorrect && (
               <Text className="encourage-msg">
-                别灰心！学习就是一个不断进步的过程 💪
+                别灰心！学习就是一个不断进步的过程
               </Text>
             )}
           </>
@@ -343,7 +343,7 @@ export default function QuizPage() {
         {/* === Quiz Complete Banner === */}
         {isCompleted && showExplanation && (
           <View className="quiz-complete-banner">
-            <Text className="complete-title">🎉 闯关完成！</Text>
+            <Text className="complete-title">闯关完成！</Text>
             <Text className="complete-score">
               {answers.filter((a) => a.is_correct).length}/{totalQuestions}
             </Text>
