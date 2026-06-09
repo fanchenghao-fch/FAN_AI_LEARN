@@ -36,7 +36,7 @@ export default function IndexPage() {
         <View className="page1-header">
           <View className="logo">
             <Text className="logo-icon">📖</Text>
-            <Text>AI闯关学</Text>
+            <Text>阿拉灯神丁</Text>
           </View>
           <View className="badge hot">
             <Text>连续学习3天</Text>
