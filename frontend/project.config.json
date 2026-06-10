@@ -2,7 +2,7 @@
   "miniprogramRoot": "dist/",
   "projectname": "ai-quiz-frontend",
   "description": "AI Quiz Platform",
-  "appid": "wxb13a91c58faaf403",
+  "appid": "wxbe5c7d7794c3b5f1",
   "setting": {
     "urlCheck": true,
     "es6": true,

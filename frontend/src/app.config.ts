@@ -4,6 +4,11 @@ export default defineAppConfig({
     "pages/loading/index",
     "pages/quiz/index",
     "pages/result/index",
+    "pages/login/index",
+    "pages/mine/index",
+    "pages/history/index",
+    "pages/wrongbook/index",
+    "pages/wrongdetail/index",
   ],
   window: {
     backgroundTextStyle: "light",

@@ -1,0 +1,129 @@
+/* ============================================================
+   Login Page — Campus Comic 校园漫画风格
+   ============================================================ */
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-top: 40px;
+}
+
+/* ── Mascot Area ─────────────────────────────────────── */
+.login-mascot-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.login-mascot-wrap {
+  flex-shrink: 0;
+}
+
+.login-speech {
+  max-width: 260px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.login-speech-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* ── Login Card ─────────────────────────────────────── */
+.login-card {
+  margin: 0 8px 16px;
+}
+
+.login-card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-input-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--dark);
+}
+
+.login-input {
+  padding: 12px 14px;
+  border: 2px dashed var(--gray);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  min-height: 44px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus {
+  border-color: var(--blue);
+  border-style: solid;
+}
+
+.login-placeholder {
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+.login-error {
+  background: var(--red-light);
+  border: 2px solid var(--red);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--red-dark);
+}
+
+.login-submit-btn {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+
+.login-submit-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.login-wx-hint {
+  font-size: 0.85rem;
+  color: var(--gray);
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.login-footer {
+  margin-top: auto;
+  padding: 16px 20px 24px;
+  text-align: center;
+}
+
+.login-footer-text {
+  font-size: 0.75rem;
+  color: var(--gray);
+  line-height: 1.5;
+}

@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 import { View, Text, Textarea } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
+import { useUserStore } from "../../stores/userStore";
 import "./index.scss";
 
 export default function IndexPage() {
@@ -125,7 +126,14 @@ export default function IndexPage() {
               key={item.label}
               className={`nav-item${item.active ? " active" : ""}`}
               onClick={() => {
-                if (!item.active) {
+                if (item.label === "我的") {
+                  const isLoggedIn = useUserStore.getState().token;
+                  if (isLoggedIn) {
+                    Taro.navigateTo({ url: "/pages/mine/index" });
+                  } else {
+                    Taro.navigateTo({ url: "/pages/login/index" });
+                  }
+                } else if (!item.active) {
                   Taro.showToast({ title: `${item.label}功能即将上线`, icon: "none" });
                 }
               }}

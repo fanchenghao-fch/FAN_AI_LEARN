@@ -1,5 +1,61 @@
 # 阿拉灯神丁 — 版本说明
 
+## v1.1.0 — 用户系统
+
+**发布日期：** 2026-06-10  
+**平台：** 微信小程序 + H5 网页双端
+
+---
+
+### 一、新增功能
+
+#### 1.1 用户认证系统
+- **H5 Mock 登录**：输入昵称即可登录，支持可选头像
+- **微信一键登录**：小程序端调用 `wx.login` 获取 code，后端换取 openid 并签发 JWT
+- **JWT Token 管理**：自动持久化到 Storage（H5: localStorage / 小程序: Taro.setStorageSync）
+- **登录态检测**：401 自动清除过期 token
+- **个人主页**：展示用户头像、昵称、学习统计占位
+
+#### 1.2 后端 Auth API
+- `POST /api/auth/mock-login` — 开发环境 Mock 登录
+- `POST /api/auth/wechat-login` — 微信小程序登录
+- `GET /api/auth/me` — 获取当前用户信息（需 Bearer Token）
+- SQLAlchemy 2.0 async + asyncmy（MySQL）数据持久化
+- 用户表 `users`（id, openid, nickname, avatar_url, created_at）
+
+#### 1.3 页面路由扩展
+- `pages/login/index` → 登录页
+- `pages/mine/index` → 个人中心（我的）
+- `pages/history/index` → 学习历史（骨架）
+- `pages/wrongbook/index` → 错题本（骨架）
+- `pages/wrongdetail/index` → 错题详情（骨架）
+
+---
+
+### 二、关键修复
+
+| 问题 | 根因 | 解决方案 |
+|---|---|---|
+| `module 'langchain' has no attribute 'verbose'` | `langchain` 1.3.4 移除了 `__getattr__`，`langchain-core` 通过 `get_verbose()` 回访 `langchain.verbose` | 移除未直接使用的 `langchain` 依赖，仅保留 `langchain-core` + `langchain-openai` |
+| 小程序 `fetch is not a function`（微信登录） | Web 的 `fetch` 请求封装被直接复用，`globalThis.fetch = polyfill` 在小程序沙箱中不传播至裸 `fetch` 标识符 | `authApi` + `analyzeQuiz` 全部改为 `Taro.request()`，该 API 在两端均可工作 |
+
+---
+
+### 三、技术决策
+
+#### 3.1 HTTP 请求统一为 Taro.request
+- `authApi.mockLogin / wechatLogin / getProfile` → `Taro.request()`
+- `analyzeQuiz` → `Taro.request()`
+- SSE 流式出题保持双路径不变（H5 fetch + 小程序 wx.request）
+- `Taro.request()` 自动序列化 data 为 JSON，自动解析 response data
+
+#### 3.2 用户状态管理
+- Zustand store（`userStore`）管理 token + user + login 状态
+- 动态 `import("../services/api")` 避免循环依赖
+- `setAuth(token, user)` 统一写入点，同步持久化到 Storage
+
+---
+
 ## MVP v1.0.0
 
 **发布日期：** 2026-06-09  

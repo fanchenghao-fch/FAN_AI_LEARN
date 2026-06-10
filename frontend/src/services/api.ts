@@ -20,10 +20,146 @@ import type {
   SSEGenerateResult,
   SSEDoneEvent,
 } from "../types/quiz";
+import type {
+  UserAPIResponse,
+  LoginResponse,
+  UserProfileResponse,
+} from "../types/user";
+import Taro from "@tarojs/taro";
 
 // ── Platform Detection ──────────────────────────────────
 
-const IS_MINI_PROGRAM = typeof fetch === "undefined";
+const IS_MINI_PROGRAM = typeof fetch !== "function";
+const API_BASE = "http://localhost:8000";
+
+// ═══════════════════════════════════════════════════════════
+// Token Management
+// ═══════════════════════════════════════════════════════════
+
+const TOKEN_KEY = "aladeng_token";
+
+function getToken(): string | null {
+  try {
+    return Taro.getStorageSync(TOKEN_KEY) || null;
+  } catch {
+    if (typeof localStorage !== "undefined") {
+      return localStorage.getItem(TOKEN_KEY);
+    }
+    return null;
+  }
+}
+
+function clearToken(): void {
+  try {
+    Taro.removeStorageSync(TOKEN_KEY);
+  } catch {
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  }
+}
+
+/**
+ * Build auth headers if a token is available.
+ */
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
+}
+
+// ═══════════════════════════════════════════════════════════
+// Auth API
+// ═══════════════════════════════════════════════════════════
+
+export const authApi = {
+  /**
+   * H5 Mock Login — post nickname, get JWT.
+   */
+  async mockLogin(
+    nickname: string,
+    avatarUrl?: string,
+  ): Promise<UserAPIResponse<LoginResponse>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/auth/mock-login`,
+        method: "POST",
+        header: { "Content-Type": "application/json" },
+        data: { nickname, avatar_url: avatarUrl },
+      });
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<LoginResponse>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+
+  /**
+   * WeChat Mini Program Login — send wx.login code, get JWT.
+   */
+  async wechatLogin(code: string): Promise<UserAPIResponse<LoginResponse>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/auth/wechat-login`,
+        method: "POST",
+        header: { "Content-Type": "application/json" },
+        data: { code },
+      });
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<LoginResponse>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+
+  /**
+   * Get current user profile (requires valid JWT).
+   */
+  async getProfile(): Promise<UserAPIResponse<UserProfileResponse>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/auth/me`,
+        method: "GET",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<UserProfileResponse>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+};
 
 // ═══════════════════════════════════════════════════════════
 // AbortController polyfill
@@ -310,8 +446,6 @@ function parseSSEBuffer(
 // Quiz Generation (SSE streaming)
 // ═══════════════════════════════════════════════════════════
 
-const API_BASE = "http://localhost:8000";
-
 // ── Web Implementation (native fetch + ReadableStream) ──
 
 export interface SSECallbacksExport extends SSECallbacks {}
@@ -491,21 +625,22 @@ export function generateQuizStream(
 export async function analyzeQuiz(
   request: QuizAnalyzeRequest,
 ): Promise<APIResponse<QuizResult>> {
-  const response = await fetch(`${API_BASE}/api/quiz/analyze`, {
+  const res = await Taro.request({
+    url: `${API_BASE}/api/quiz/analyze`,
     method: "POST",
-    headers: {
+    header: {
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
-    body: JSON.stringify(request),
+    data: request,
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    const errorData = res.data as { message?: string } | undefined;
     throw new Error(
-      (errorData as { message?: string }).message ||
-        `HTTP ${response.status}`,
+      errorData?.message || `HTTP ${res.statusCode}`,
     );
   }
 
-  return response.json() as Promise<APIResponse<QuizResult>>;
+  return res.data as APIResponse<QuizResult>;
 }
