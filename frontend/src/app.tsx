@@ -1,7 +1,6 @@
 import { PropsWithChildren } from "react";
 import { useLaunch } from "@tarojs/taro";
 import "./app.scss";
-import "./app.h5.scss";
 
 function App({ children }: PropsWithChildren<object>) {
   useLaunch(() => {

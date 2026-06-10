@@ -1,5 +1,74 @@
 # 阿拉灯神丁 — 版本说明
 
+## v1.2.0 — 平台纯净化：移除 H5/Web
+
+**发布日期：** 2026-06-10  
+**平台：** 微信小程序（已移除 H5 网页版）
+
+---
+
+### 一、重大变更
+
+项目从 **双端（H5 + 微信小程序）** 重构为 **纯微信小程序** 项目。H5 网页版在生产发布中无明确作用，移除后可减少编译体积和维护复杂度。
+
+### 二、删除内容
+
+#### 2.1 前端删除
+| 文件/目录 | 说明 |
+|---|---|
+| `frontend/src/index.html` | H5 入口 HTML |
+| `frontend/src/app.h5.scss` | H5 专属样式（手机框、纸纹理、自定义滚动条） |
+| `frontend/src/app.boot.ts` | H5 prebundle 兼容 workaround |
+| `frontend-web/` | Phase 0 独立 Web 原型（Vite + React） |
+
+#### 2.2 后端删除
+| 端点/文件 | 说明 |
+|---|---|
+| `POST /api/quiz/generate`（SSE 流式） | 小程序无法消费 SSE |
+| `POST /api/auth/mock-login` | H5 开发用，小程序不需要 |
+| `backend/app/utils/sse.py` | SSE 工具函数文件 |
+| `sse-starlette` 依赖 | SSE 框架依赖 |
+
+#### 2.3 代码精简
+| 函数/类型 | 说明 |
+|---|---|
+| `authApi.mockLogin()` | Mock 登录方法 |
+| `generateQuizStreamWeb()` | H5 SSE 流式生成（~60 行） |
+| `parseSSEBuffer()` | SSE 缓冲区解析器（~60 行） |
+| `miniFetch` / fetch polyfill | 小程序 fetch 兼容层（~90 行） |
+| `IS_MINI_PROGRAM` 平台判断 | 已无分支场景 |
+| `MockLoginRequest`（前后端） | 类型定义 |
+| `SSECallbacksExport` | 仅 H5 使用 |
+| `@tarojs/plugin-platform-h5` | H5 编译插件 |
+| `dev:h5` / `build:h5` | NPM 脚本 |
+| `config/index.ts` 中 `h5:` 段 | H5 编译配置 |
+
+### 三、保留的关键路径（不受影响）
+
+| 保留内容 | 说明 |
+|---|---|
+| `POST /api/quiz/generate-sync` | 小程序出题核心端点 |
+| `POST /api/quiz/analyze` | 答题结果分析 |
+| `POST /api/auth/wechat-login` | 微信登录 |
+| `GET /api/auth/me` | 用户信息查询 |
+| `authApi.wechatLogin / getProfile` | 前端 auth API |
+| `generateQuizStream → generateQuizStreamMini` | 前端出题（简化调用链） |
+| `AbortController / TextDecoder polyfills` | 小程序运行时兼容 |
+| `arrayBufferToUtf8()` | UTF-8 解码 |
+| 所有页面组件 | 首页、答题、结果、登录、个人中心等 |
+
+### 四、编译体积对比
+
+| 指标 | 清理前 | 清理后 |
+|---|---|---|
+| `api.ts` 行数 | 647 | 285 |
+| `config/index.ts` 行数 | 82 | 56 |
+| NPM 脚本 | 12 | 10 |
+| 前端依赖 | 13 | 12 |
+| 后端依赖 | 13 | 12 |
+
+---
+
 ## v1.1.0 — 用户系统
 
 **发布日期：** 2026-06-10  
@@ -146,39 +215,53 @@
 
 ```
 FAN_AI_LEARN/
-├── frontend/                  # Taro 4.2 前端
+├── frontend/                  # Taro 4.2 前端（微信小程序）
 │   └── src/
 │       ├── app.config.ts      # 全局配置（页面路由、窗口样式）
 │       ├── app.scss           # 全局样式（色板、组件、动画）
-│       ├── index.html         # H5 入口 HTML
 │       ├── components/
 │       │   └── Mascot.tsx     # 吉祥物组件（灯灯）
 │       ├── hooks/
 │       │   ├── useQuizEngine.ts
-│       │   └── useTimer.ts
+│       │   ├── useTimer.ts
+│       │   └── useSSE.ts
 │       ├── pages/
 │       │   ├── index/         # 首页
 │       │   ├── loading/       # AI 出题加载页
 │       │   ├── quiz/          # 答题页
-│       │   └── result/        # 通关结果 + 分析报告
+│       │   ├── result/        # 通关结果 + 分析报告
+│       │   ├── login/         # 微信一键登录
+│       │   ├── mine/          # 个人中心
+│       │   ├── history/       # 学习历史
+│       │   ├── wrongbook/     # 错题本
+│       │   └── wrongdetail/   # 错题详情
 │       ├── services/
-│       │   └── api.ts         # 网络层（双路径 + polyfill）
+│       │   └── api.ts         # 网络层（Taro.request + wx.request）
 │       ├── stores/
 │       │   ├── quizStore.ts   # 答题状态管理
-│       │   └── uiStore.ts    # UI 状态管理
+│       │   ├── uiStore.ts    # UI 状态管理
+│       │   └── userStore.ts  # 用户认证状态管理
 │       └── types/
-│           └── quiz.ts        # 类型定义
+│           ├── quiz.ts        # 答题类型定义
+│           └── user.ts        # 用户类型定义
 ├── backend/                   # FastAPI 后端
 │   └── app/
 │       ├── api/
-│       │   └── quiz.py        # 题目生成 + 分析 API
+│       │   ├── quiz.py        # 题目生成（/generate-sync）+ 分析 API
+│       │   └── auth.py        # 微信登录 + 用户信息 API
 │       ├── chains/
 │       │   ├── quiz_generation.py  # LangChain 出题链
-│       │   └── quiz_validation.py  # LangChain 校验链
+│       │   ├── quiz_validation.py  # LangChain 校验链
+│       │   └── result_analysis.py  # LangChain 分析链
 │       ├── models/
-│       │   └── api.py         # Pydantic 模型
-│       └── utils/
-│           └── sse.py         # SSE 事件工具
+│       │   ├── api.py         # 请求/响应 Pydantic 模型
+│       │   ├── quiz.py        # 题目 Pydantic 模型
+│       │   ├── user_orm.py    # SQLAlchemy ORM 模型
+│       │   └── user_schemas.py # 用户 Pydantic 模型
+│       ├── services/
+│       │   └── auth.py        # JWT + 微信 code2session
+│       ├── config.py          # 配置管理
+│       └── database.py        # 数据库连接
 └── VERSION.md                 # 本文件
 ```
 

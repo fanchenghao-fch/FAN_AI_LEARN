@@ -15,12 +15,6 @@ from pydantic import BaseModel, ConfigDict, Field
 # Auth — Request
 # ═══════════════════════════════════════════════════════════════
 
-class MockLoginRequest(BaseModel):
-    """H5 Mock 登录请求."""
-    nickname: str = Field(..., min_length=1, max_length=64, description="用户昵称")
-    avatar_url: Optional[str] = Field(None, max_length=512, description="头像URL（可选）")
-
-
 class WechatLoginRequest(BaseModel):
     """微信小程序登录请求."""
     code: str = Field(..., min_length=1, description="wx.login 返回的 code")

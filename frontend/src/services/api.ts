@@ -1,14 +1,10 @@
 /**
  * API service layer for communicating with the FastAPI backend.
  *
- * Handles SSE streaming for quiz generation and standard JSON for analysis.
+ * All HTTP requests use Taro.request (cross-platform: WeChat Mini Program).
  *
- * NOTE: WeChat Mini Program runtime does not provide fetch, AbortController,
- * ReadableStream, or TextDecoder. Polyfills are included below — active only
- * when the native API is missing (mini-program), transparent in H5/browsers.
- *
- * SSE streaming in mini-program uses wx.request + enableChunked + onChunkReceived
- * which is fundamentally different from the browser ReadableStream model.
+ * Quiz generation uses wx.request + /generate-sync (JSON endpoint) because
+ * WeChat Mini Program cannot consume SSE streams via wx.request.
  */
 
 import type {
@@ -16,9 +12,6 @@ import type {
   QuizAnalyzeRequest,
   APIResponse,
   QuizResult,
-  SSEProgressEvent,
-  SSEGenerateResult,
-  SSEDoneEvent,
 } from "../types/quiz";
 import type {
   UserAPIResponse,
@@ -27,9 +20,6 @@ import type {
 } from "../types/user";
 import Taro from "@tarojs/taro";
 
-// ── Platform Detection ──────────────────────────────────
-
-const IS_MINI_PROGRAM = typeof fetch !== "function";
 const API_BASE = "http://localhost:8000";
 
 // ═══════════════════════════════════════════════════════════
@@ -42,9 +32,6 @@ function getToken(): string | null {
   try {
     return Taro.getStorageSync(TOKEN_KEY) || null;
   } catch {
-    if (typeof localStorage !== "undefined") {
-      return localStorage.getItem(TOKEN_KEY);
-    }
     return null;
   }
 }
@@ -53,9 +40,7 @@ function clearToken(): void {
   try {
     Taro.removeStorageSync(TOKEN_KEY);
   } catch {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(TOKEN_KEY);
-    }
+    // Ignore errors in environments without Taro APIs
   }
 }
 
@@ -75,34 +60,6 @@ function authHeaders(): Record<string, string> {
 // ═══════════════════════════════════════════════════════════
 
 export const authApi = {
-  /**
-   * H5 Mock Login — post nickname, get JWT.
-   */
-  async mockLogin(
-    nickname: string,
-    avatarUrl?: string,
-  ): Promise<UserAPIResponse<LoginResponse>> {
-    try {
-      const res = await Taro.request({
-        url: `${API_BASE}/api/auth/mock-login`,
-        method: "POST",
-        header: { "Content-Type": "application/json" },
-        data: { nickname, avatar_url: avatarUrl },
-      });
-
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        return {
-          code: res.statusCode,
-          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
-        };
-      }
-
-      return res.data as UserAPIResponse<LoginResponse>;
-    } catch (err) {
-      return { code: -1, message: (err as Error).message || "网络请求失败" };
-    }
-  },
-
   /**
    * WeChat Mini Program Login — send wx.login code, get JWT.
    */
@@ -203,7 +160,7 @@ if (typeof AbortController === "undefined") {
 }
 
 // ═══════════════════════════════════════════════════════════
-// TextDecoder polyfill (mini-program only)
+// TextDecoder polyfill
 // ═══════════════════════════════════════════════════════════
 
 if (typeof TextDecoder === "undefined") {
@@ -281,241 +238,35 @@ function arrayBufferToUtf8(buffer: ArrayBuffer | Uint8Array): string {
 }
 
 // ═══════════════════════════════════════════════════════════
-// fetch polyfill (mini-program, for non-streaming requests)
+// Quiz Generation (sync JSON endpoint for Mini Program)
 // ═══════════════════════════════════════════════════════════
-
-if (IS_MINI_PROGRAM) {
-  // WeChat Mini Program RequestTask (returned by wx.request)
-  interface WxRequestTask {
-    abort(): void;
-    onChunkReceived?(cb: (res: { data: ArrayBuffer }) => void): void;
-  }
-
-  // Extend wx global types
-  declare const wx: {
-    request(opts: {
-      url: string;
-      method?: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS" | "HEAD" | "TRACE" | "CONNECT";
-      header?: Record<string, string>;
-      data?: unknown;
-      enableChunked?: boolean;
-      responseType?: "text" | "arraybuffer";
-      success?: (res: { statusCode: number; data: unknown; header: Record<string, string> }) => void;
-      fail?: (err: { errMsg: string }) => void;
-    }): WxRequestTask;
-  };
-
-  // Minimal fetch-like response for non-streaming requests (e.g. analyzeQuiz)
-  const miniFetch = (
-    input: string,
-    init?: { method?: string; headers?: Record<string, string>; body?: string },
-  ): Promise<{
-    ok: boolean;
-    status: number;
-    statusText: string;
-    json(): Promise<unknown>;
-    body: null;
-    headers: { get(name: string): string | null };
-  }> => {
-    return new Promise((resolve, reject) => {
-      // wx.request auto-serializes objects; for fetch compat we parse string body back
-      let data: unknown = undefined;
-      if (init?.body) {
-        try {
-          data = JSON.parse(init.body);
-        } catch {
-          data = init.body;
-        }
-      }
-
-      const requestTask = wx.request({
-        url: input,
-        method: (init?.method || "GET") as "POST",
-        header: {
-          "Content-Type": "application/json",
-          ...(init?.headers || {}),
-        },
-        data,
-        responseType: "text",
-        success: (res) => {
-          const headersMap = res.header || {};
-          resolve({
-            ok: res.statusCode >= 200 && res.statusCode < 300,
-            status: res.statusCode,
-            statusText: "",
-            json: async () => {
-              if (typeof res.data === "string") {
-                try { return JSON.parse(res.data); } catch { return res.data; }
-              }
-              return res.data;
-            },
-            body: null,
-            headers: {
-              get(name: string): string | null {
-                const key = name.toLowerCase();
-                for (const [k, v] of Object.entries(headersMap)) {
-                  if (k.toLowerCase() === key) return v as string;
-                }
-                return null;
-              },
-            },
-          });
-        },
-        fail: (err) => {
-          reject(new Error(err.errMsg || "Network request failed"));
-        },
-      });
-
-      // Minimal signal support (our polyfilled AbortController uses onabort)
-      if (init?.headers?.["x-abort-task"]) {
-        // Signal wiring happens externally via the returned MiniAbortController
-      }
-      // Store on the promise so callers can wire abort
-      (requestTask as WxRequestTask & { __task?: WxRequestTask }).__task = requestTask;
-    });
-  };
-
-  (globalThis as Record<string, unknown>).fetch = miniFetch;
-}
-
-// ── SSE Buffer Parser (shared) ─────────────────────────
-
-interface SSECallbacks {
-  onProgress?: (event: SSEProgressEvent) => void;
-  onResult?: (result: SSEGenerateResult) => void;
-  onDone?: (event: SSEDoneEvent) => void;
-  onError?: (message: string, detail?: string) => void;
-}
-
-interface SSEParseState {
-  currentEvent: string;
-}
-
-/**
- * Parse accumulated SSE text buffer, calling callbacks for complete events.
- * Returns the state with updated `currentEvent` so subsequent calls continue
- * dispatching to the correct event type.
- */
-function parseSSEBuffer(
-  text: string,
-  callbacks: SSECallbacks,
-  state: SSEParseState,
-): string {
-  const lines = text.split("\n");
-  // The last line may be incomplete — keep it for the next chunk
-  const remainder = lines.pop() || "";
-
-  for (const line of lines) {
-    if (line.startsWith("event: ")) {
-      state.currentEvent = line.slice(7).trim();
-    } else if (line.startsWith("data: ")) {
-      const raw = line.slice(6);
-      try {
-        const parsed = JSON.parse(raw);
-        console.log("[SSE] event parsed:", state.currentEvent, state.currentEvent === "result" ? "(RESULT)" : "");
-        switch (state.currentEvent) {
-          case "progress":
-            callbacks.onProgress?.(parsed as SSEProgressEvent);
-            break;
-          case "result":
-            callbacks.onResult?.(parsed as SSEGenerateResult);
-            break;
-          case "done":
-            callbacks.onDone?.(parsed as SSEDoneEvent);
-            break;
-          case "error":
-            callbacks.onError?.(parsed.message, parsed.detail);
-            break;
-        }
-      } catch {
-        // Log parse failures so we can diagnose SSE data issues
-        console.error(
-          "[SSE] JSON parse FAILED — currentEvent:",
-          state.currentEvent,
-          "raw preview:",
-          raw.substring(0, 200),
-        );
-      }
-    }
-  }
-
-  return remainder;
-}
-
-// ═══════════════════════════════════════════════════════════
-// Quiz Generation (SSE streaming)
-// ═══════════════════════════════════════════════════════════
-
-// ── Web Implementation (native fetch + ReadableStream) ──
-
-export interface SSECallbacksExport extends SSECallbacks {}
-
-function generateQuizStreamWeb(
-  request: QuizGenerateRequest,
-  callbacks: SSECallbacks,
-): AbortController {
-  const controller = new AbortController();
-
-  fetch(`${API_BASE}/api/quiz/generate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "text/event-stream",
-    },
-    body: JSON.stringify(request),
-    signal: controller.signal as unknown as AbortSignal,
-  })
-    .then(async (response) => {
-      if (controller.signal.aborted) return;
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        callbacks.onError?.(
-          `HTTP ${response.status}: ${response.statusText}`,
-          (errorData as { detail?: string }).detail,
-        );
-        return;
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        callbacks.onError?.("无法读取响应流");
-        return;
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = "";
-      const state: SSEParseState = { currentEvent: "" };
-
-      while (true) {
-        if (controller.signal.aborted) {
-          reader.cancel().catch(() => {});
-          return;
-        }
-
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        buffer = parseSSEBuffer(buffer, callbacks, state);
-      }
-    })
-    .catch((error: Error) => {
-      if (error.name !== "AbortError") {
-        callbacks.onError?.("网络请求失败", error.message);
-      }
-    });
-
-  return controller;
-}
-
-// ── Mini-Program Implementation (sync JSON endpoint) ─────
 //
 // WeChat Mini Program's wx.request cannot consume SSE streams
 // (ReadableStream / chunked transfer doesn't work reliably through
 // the DevTools proxy).  Instead we call a dedicated synchronous
 // endpoint that runs the full generation + validation chain and
 // returns a single JSON response with quiz data.
+
+interface SSECallbacks {
+  onProgress?: (event: { stage: string; message: string }) => void;
+  onResult?: (result: Record<string, unknown>) => void;
+  onDone?: (event: { status: string }) => void;
+  onError?: (message: string, detail?: string) => void;
+}
+
+// Extend wx global types
+declare const wx: {
+  request(opts: {
+    url: string;
+    method?: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS" | "HEAD" | "TRACE" | "CONNECT";
+    header?: Record<string, string>;
+    data?: unknown;
+    timeout?: number;
+    responseType?: "text" | "arraybuffer";
+    success?: (res: { statusCode: number; data: unknown; header: Record<string, string> }) => void;
+    fail?: (err: { errMsg: string }) => void;
+  }): { abort(): void };
+};
 
 function generateQuizStreamMini(
   request: QuizGenerateRequest,
@@ -580,7 +331,7 @@ function generateQuizStreamMini(
       callbacks.onProgress?.({ stage: "validating", message: "正在校验题目准确性..." });
 
       console.log("[Quiz] quiz generated:", payload.data.quiz_id);
-      callbacks.onResult?.(payload.data as unknown as SSEGenerateResult);
+      callbacks.onResult?.(payload.data);
     },
 
     fail: (err) => {
@@ -598,10 +349,8 @@ function generateQuizStreamMini(
   return controller;
 }
 
-// ── Public API: platform-dispatching ────────────────────
-
 /**
- * Generate quiz questions via SSE streaming.
+ * Generate quiz questions (WeChat Mini Program — sync JSON endpoint).
  *
  * @returns An AbortController whose `.abort()` cancels the request.
  */
@@ -609,14 +358,11 @@ export function generateQuizStream(
   request: QuizGenerateRequest,
   callbacks: SSECallbacks,
 ): AbortController {
-  if (IS_MINI_PROGRAM) {
-    return generateQuizStreamMini(request, callbacks);
-  }
-  return generateQuizStreamWeb(request, callbacks);
+  return generateQuizStreamMini(request, callbacks);
 }
 
 // ═══════════════════════════════════════════════════════════
-// Quiz Analysis (standard JSON, non-streaming)
+// Quiz Analysis (standard JSON)
 // ═══════════════════════════════════════════════════════════
 
 /**

@@ -119,32 +119,6 @@ async def get_current_user(
 # ── User Helpers ─────────────────────────────────────────────
 
 
-async def get_or_create_mock_user(
-    db: AsyncSession,
-    nickname: str,
-    avatar_url: str | None = None,
-) -> User:
-    """Find a user by nickname (Mock login) or create a new one.
-
-    If multiple users share the same nickname, returns the most recent match.
-    """
-    result = await db.execute(
-        select(User)
-        .where(User.nickname == nickname, User.open_id.is_(None))
-        .order_by(User.created_at.desc())
-        .limit(1)
-    )
-    user = result.scalar_one_or_none()
-
-    if user is None:
-        user = User(nickname=nickname, avatar_url=avatar_url)
-        db.add(user)
-        await db.flush()
-        await db.refresh(user)  # Load server-generated defaults (created_at, etc.)
-
-    return user
-
-
 async def get_or_create_wechat_user(
     db: AsyncSession,
     open_id: str,

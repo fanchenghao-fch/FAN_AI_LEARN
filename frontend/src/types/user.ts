@@ -6,11 +6,6 @@
 
 // ── Auth ────────────────────────────────────────────────────
 
-export interface MockLoginRequest {
-  nickname: string;
-  avatar_url?: string;
-}
-
 export interface WechatLoginRequest {
   code: string;
   nickname?: string;

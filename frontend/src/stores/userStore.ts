@@ -4,7 +4,6 @@
  * Manages: token persistence, user profile, login/logout flows.
  *
  * Token storage strategy:
- *   H5:        localStorage  ('aladeng_token')
  *   Mini-program: Taro.setStorageSync / getStorageSync
  */
 
@@ -18,7 +17,6 @@ const TOKEN_KEY = "aladeng_token";
 
 function getPlatformToken(): string | null {
   try {
-    // Taro APIs available in both H5 and mini-program
     return Taro.getStorageSync(TOKEN_KEY) || null;
   } catch {
     // Fallback for environments without Taro APIs
@@ -71,9 +69,6 @@ interface UserActions {
   /** Check if the user is currently logged in (has a token) */
   isLoggedIn: () => boolean;
 
-  /** Login with nickname (H5 Mock login) */
-  mockLogin: (nickname: string, avatarUrl?: string) => Promise<void>;
-
   /** Login with WeChat code (Mini Program) */
   wechatLogin: (code: string) => Promise<void>;
 
@@ -104,26 +99,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
   isLoggedIn: () => {
     return !!get().token;
-  },
-
-  mockLogin: async (nickname: string, avatarUrl?: string) => {
-    set({ isLoggingIn: true, loginError: null });
-
-    try {
-      // Dynamic import to avoid circular dependency
-      const { authApi } = await import("../services/api");
-      const result = await authApi.mockLogin(nickname, avatarUrl);
-
-      if (result.code === 0 && result.data) {
-        get().setAuth(result.data.token, result.data.user);
-      } else {
-        set({ loginError: result.message || "登录失败" });
-      }
-    } catch (err) {
-      set({ loginError: (err as Error).message || "网络请求失败" });
-    } finally {
-      set({ isLoggingIn: false });
-    }
   },
 
   wechatLogin: async (code: string) => {

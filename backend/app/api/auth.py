@@ -1,4 +1,4 @@
-"""Auth API routes: login (Mock + WeChat) and current user."""
+"""Auth API routes: WeChat login and current user."""
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,14 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.user_schemas import (
     LoginResponse,
-    MockLoginRequest,
     UserProfileResponse,
     WechatLoginRequest,
 )
 from app.services.auth import (
     create_jwt,
     get_current_user,
-    get_or_create_mock_user,
     get_or_create_wechat_user,
     user_to_brief,
     wechat_code_to_openid,
@@ -21,25 +19,6 @@ from app.services.auth import (
 from app.models.user_orm import User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-
-# ── Mock Login (H5) ─────────────────────────────────────────
-
-@router.post("/mock-login", response_model=dict)
-async def mock_login(
-    body: MockLoginRequest,
-    db: AsyncSession = Depends(get_db),
-):
-    """H5 Mock 登录：输入昵称即可登录（仅开发/演示用途）。"""
-    user = await get_or_create_mock_user(db, body.nickname, body.avatar_url)
-    token = create_jwt(user.id)
-    user_brief = await user_to_brief(user, db)
-
-    return {
-        "code": 0,
-        "message": "ok",
-        "data": LoginResponse(token=token, user=user_brief).model_dump(),
-    }
 
 
 # ── WeChat Login ────────────────────────────────────────────

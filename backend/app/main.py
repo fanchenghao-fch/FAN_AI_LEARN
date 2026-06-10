@@ -58,10 +58,6 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:10086",
-        "http://127.0.0.1:10086",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
         # Mini-program webview (servicewechat.com)
         "https://servicewechat.com",
     ],

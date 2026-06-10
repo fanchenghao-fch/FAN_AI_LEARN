@@ -1,11 +1,8 @@
-"""Quiz API routes — generation, validation, and analysis."""
+"""Quiz API routes — generation and analysis (WeChat Mini Program)."""
 
-import json
 import uuid
-from typing import AsyncGenerator
 
 from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
 
 from app.models.api import QuizGenerateRequest, QuizAnalyzeRequest, APIResponse
 from app.models.quiz import QuizOutput, QuizResult
@@ -21,91 +18,8 @@ from app.chains.result_analysis import (
     create_analysis_chain,
     build_analysis_input,
 )
-from app.utils.sse import progress_event, result_event, done_event, error_event
-from app.config import settings
 
 router = APIRouter(prefix="/api/quiz", tags=["quiz"])
-
-
-@router.post("/generate")
-async def generate_quiz(request: QuizGenerateRequest):
-    """Generate quiz questions from user knowledge input.
-
-    Returns SSE stream with progress updates and final quiz data.
-    (H5/web clients only — mini-program clients use /generate-sync.)
-
-    Events:
-        - progress: {stage, message} — generation progress
-        - result: QuizOutput — the generated quiz
-        - done: {status, total_tokens?, model?} — completion
-        - error: {message, detail?} — error information
-    """
-
-    async def event_stream() -> AsyncGenerator[str, None]:
-        try:
-            # Stage 1: Generate questions
-            yield await progress_event("generating", "正在分析知识点...")
-
-            gen_chain = create_quiz_generation_chain(streaming=True)
-            gen_input = build_generation_input(
-                knowledge_input=request.knowledge_input,
-                question_count=request.question_count,
-                question_types=request.question_types,
-                difficulty=request.difficulty,
-            )
-
-            # Stream the chain and collect full response
-            full_output: dict = {}
-            async for chunk in gen_chain.astream(gen_input):
-                full_output = chunk
-                yield await progress_event(
-                    "generating",
-                    f"正在生成题目...",
-                )
-
-            # Parse as QuizOutput for validation
-            quiz_output = QuizOutput(**full_output)
-
-            # Stage 2: Validate questions
-            yield await progress_event("validating", "正在校验题目准确性...")
-
-            # Convert questions to dict for validation
-            questions_dict = [
-                q.model_dump() for q in quiz_output.questions
-            ]
-            val_chain = create_validation_chain()
-            val_input = build_validation_input(questions_dict)
-            validation_result = await val_chain.ainvoke(val_input)
-
-            # Stage 3: Send result
-            quiz_id = f"quiz_{uuid.uuid4().hex[:12]}"
-
-            response_data = {
-                "quiz_id": quiz_id,
-                "title": quiz_output.title,
-                "knowledge_domain": quiz_output.knowledge_domain,
-                "questions": [q.model_dump() for q in quiz_output.questions],
-                "validation": validation_result,
-            }
-
-            yield await result_event(response_data)
-            yield await done_event({"status": "completed"})
-
-        except Exception as e:
-            yield await error_event(
-                "题目生成失败",
-                detail=str(e),
-            )
-
-    return StreamingResponse(
-        event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
-    )
 
 
 @router.post("/generate-sync")

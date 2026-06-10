@@ -14,14 +14,13 @@ export default defineConfig<"webpack5">(async (merge, { command, mode }) => {
       828: 1.81 / 2,
     },
     sourceRoot: "src",
-    // 两端独立输出目录，避免互相覆盖
-    outputRoot: `${process.env.TARO_ENV === "h5" ? "dist-h5" : "dist"}`,
+    // 小程序独立输出目录
+    outputRoot: "dist",
     // 也可以通过环境变量注入构建时间
     env: {
       TARO_APP_BUILD_TIME: JSON.stringify(new Date().toISOString()),
     },
     plugins: [
-      "@tarojs/plugin-platform-h5",
       "@tarojs/plugin-platform-weapp",
       "@tarojs/plugin-framework-react",
       "@tarojs/plugin-html",
@@ -36,40 +35,7 @@ export default defineConfig<"webpack5">(async (merge, { command, mode }) => {
     cache: {
       enable: false,
     },
-    mini: {
-      webpackChain(chain) {
-        // 排除 H5 专属样式
-        chain.module
-          .rule("h5-scss-null")
-          .test(/\.h5\.scss$/)
-          .enforce("pre")
-          .use("null-loader")
-          .loader("null-loader");
-      },
-    },
-    h5: {
-      publicPath: "/",
-      staticDirectory: "static",
-      output: {
-        filename: "js/[name].[hash:8].js",
-        chunkFilename: "js/[name].[chunkhash:8].js",
-      },
-      miniCss: {
-        filename: "css/[name].[hash:8].css",
-        chunkFilename: "css/[name].[chunkhash:8].css",
-      },
-      router: {
-        mode: "hash",
-        basename: "/",
-      },
-      devServer: {
-        port: 10086,
-        host: "0.0.0.0",
-      },
-      webpackChain(chain) {
-        chain.output.set("publicPath", "/");
-      },
-    },
+    mini: {},
     rn: {
       appName: "AiQuizFrontend",
     },
