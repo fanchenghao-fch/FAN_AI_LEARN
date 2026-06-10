@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -20,6 +21,7 @@ from app.models.user_orm import (
 from app.models.user_schemas import (
     HistoryItem,
     HistoryPage,
+    RetryAnswerRequest,
     UserStats,
     WrongQuestionDetailResponse,
     WrongQuestionItem,
@@ -50,6 +52,17 @@ async def _get_level_title(db: AsyncSession, level_id: int) -> str:
     return row if row else "初学萌新"
 
 
+def _parse_options(options_raw: str | None) -> list[dict] | None:
+    """Parse JSON-serialised answer options, returning None on failure."""
+    if options_raw is None:
+        return None
+    try:
+        parsed = json.loads(options_raw)
+        return parsed if isinstance(parsed, list) else None
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+
 def _wrong_q_to_item(wq: WrongQuestion) -> WrongQuestionItem:
     """Convert WrongQuestion ORM to WrongQuestionItem schema."""
     return WrongQuestionItem(
@@ -62,6 +75,7 @@ def _wrong_q_to_item(wq: WrongQuestion) -> WrongQuestionItem:
         domain=wq.domain,
         resolved=bool(wq.resolved),
         created_at=wq.created_at,
+        options=_parse_options(wq.options),
     )
 
 
@@ -283,6 +297,7 @@ async def get_wrong_question_detail(
             resolved_at=wq.resolved_at,
             session_title=session_title,
             session_id=session_id,
+            options=_parse_options(wq.options),
         ).model_dump(),
     }
 
@@ -330,6 +345,73 @@ async def resolve_wrong_question(
         "data": {
             "resolved": True,
             "resolved_at": wq.resolved_at.isoformat() if wq.resolved_at else None,
+        },
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# POST /api/user/wrong-questions/{id}/retry
+# ═══════════════════════════════════════════════════════════════
+
+@router.post("/wrong-questions/{wrong_id}/retry")
+async def retry_wrong_question(
+    wrong_id: str,
+    body: RetryAnswerRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Re-answer a wrong question.
+
+    If the answer is correct the wrong question is auto-resolved and a
+    small coin reward (+2) is granted.  Incorrect answers keep the
+    question in "待复习" state.
+    """
+    result = await db.execute(
+        select(WrongQuestion)
+        .where(
+            WrongQuestion.id == wrong_id,
+            WrongQuestion.user_id == user.id,
+        )
+    )
+    wq = result.scalar_one_or_none()
+
+    if wq is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="错题不存在",
+        )
+
+    # Normalise for comparison
+    is_correct = body.user_answer.strip().upper() == wq.correct_answer.strip().upper()
+
+    coins_earned = 0
+
+    if is_correct:
+        # Auto-resolve if not already resolved
+        if not wq.resolved:
+            wq.resolved = 1
+            wq.resolved_at = datetime.now(timezone.utc)
+            # Small reward for re-answering correctly
+            coins_earned = 2
+            user.coins += coins_earned
+            user.experience += coins_earned
+
+            # Check level-up
+            from app.services.points import update_user_level
+            new_level = update_user_level(user.experience, user.level_id)
+            if new_level != user.level_id:
+                user.level_id = new_level
+
+            await db.flush()
+
+    return {
+        "code": 0,
+        "message": "回答正确！" if is_correct else "继续加油！",
+        "data": {
+            "is_correct": is_correct,
+            "correct_answer": wq.correct_answer,
+            "resolved": bool(wq.resolved),
+            "coins_earned": coins_earned,
         },
     }
 

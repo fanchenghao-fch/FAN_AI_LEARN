@@ -133,6 +133,85 @@
 
 ---
 
+## v1.4.0 — 用户系统 P2：错题重做 + 全部重做
+
+**发布日期：** 2026-06-10  
+**提交：** `8fc0fbc`  
+**平台：** 微信小程序
+
+---
+
+### 一、重大新增
+
+#### 1.1 错题重做（Re-answer）
+
+- **新增 API**：`POST /api/user/wrong-questions/{id}/retry`
+  - 接收用户重新选择的答案，判断对错
+  - 答对 → 自动标记已掌握（resolved=true）+ 奖励 +2 金币
+  - 答错 → 保持待复习状态，提示"继续加油"
+- **WrongQuestion 表新增 `options` 字段**：存储 JSON 序列化的原始 A/B/C/D 选项
+  - ORM 模型新增 `options` TEXT 列
+  - `quiz.py` analyze 端点保存错题时附带原始选项
+  - `init.sql` 建表脚本同步更新
+  - `main.py` 启动时自动迁移：为已有表添加 options 列（幂等）
+- **Schema 更新**：`WrongQuestionItem` / `WrongQuestionDetailResponse` 新增 `options` 字段
+- **新增模型**：`RetryAnswerRequest` / `RetryAnswerResponse`
+
+#### 1.2 错题详情页重做交互
+
+- **重新作答区域**：展示原始 A/B/C/D 选项按钮（Campus Comic 风格）
+  - 点击选项 → 调用 retry API → 四种视觉状态：
+    - `selected`（蓝色高亮）→ 等待 API 响应
+    - `correct`（绿色 + ✓图标）→ 答对
+    - `wrong`（红色）→ 答错
+    - `hint-correct`（绿色边框提示）→ 答错后高亮正确答案
+  - 答对自动显示"已掌握"横幅 + toast 提示金币奖励
+  - 答错 toast 鼓励，灯灯 mascot 情绪切换
+- **向后兼容**：无 options 的旧错题仍可手动"标记为已掌握"
+
+#### 1.3 全部重做
+
+- **错题本页新增「全部重做」按钮**：将待复习错题拼接为新闯关
+  - 自动筛选有 options 的未掌握错题
+  - 构建 Question 对象 → initSession → 跳转答题页
+  - 智能判断题型：≤2 个选项 → `truefalse`，>2 → `choice`
+
+### 二、TDD 测试覆盖
+
+| 测试文件 | 新增用例 | 覆盖内容 |
+|----------|---------|----------|
+| `test_user_api.py` | +6 | retry 端点：auth/404/答对/答错/已掌握重答/options 保存 |
+| **合计** | **76** | **全部通过（+ 6 个 SSE 遗留失败，非本次变更）** |
+
+### 三、文件变更统计
+
+| 类别 | 新增 | 修改 | 合计 |
+|------|------|------|------|
+| 后端 | 0 | 7 | 7 |
+| 前端 | 0 | 6 | 6 |
+| 文档 | 0 | 2 | 2 |
+| **合计** | **0** | **15** | **15** |
+
+```
+修改:
+  backend/app/api/quiz.py               (保存 options +2 lines)
+  backend/app/api/user.py               (新增 retry 端点 +60 lines)
+  backend/app/main.py                   (启动迁移 +20 lines)
+  backend/app/models/user_orm.py        (options 列 +1 line)
+  backend/app/models/user_schemas.py    (retry 模型 +20 lines)
+  backend/tests/test_user_api.py        (retry 测试 +110 lines)
+  backend/init.sql                      (options 列 +1 line)
+  frontend/src/pages/wrongbook/index.tsx (全部重做按钮 +35 lines)
+  frontend/src/pages/wrongbook/index.scss (+8 lines)
+  frontend/src/pages/wrongdetail/index.tsx (重新作答 UI +120 lines)
+  frontend/src/pages/wrongdetail/index.scss (+80 lines)
+  frontend/src/services/api.ts          (retryWrongQuestion +35 lines)
+  frontend/src/types/user.ts            (options + RetryAnswerResponse)
+  VERSION.md                            (本文档)
+```
+
+---
+
 ## v1.2.0 — 平台纯净化：移除 H5/Web
 
 **发布日期：** 2026-06-10  

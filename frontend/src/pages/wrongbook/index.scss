@@ -53,6 +53,15 @@
   color: var(--green-dark);
 }
 
+/* ── Retry All Button ─────────────────────────────────── */
+.wrongbook-retry-all-btn {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
 /* ── Domain Group ─────────────────────────────────────── */
 .wrongbook-group {
   margin-bottom: 14px;

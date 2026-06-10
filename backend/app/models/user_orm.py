@@ -146,6 +146,7 @@ class WrongQuestion(Base):
     correct_answer: Mapped[str] = mapped_column(String(512), nullable=False)
     explanation: Mapped[str] = mapped_column(Text, nullable=False)
     domain: Mapped[str] = mapped_column(String(128), nullable=False, default="")
+    options: Mapped[str | None] = mapped_column(Text, nullable=True, comment="JSON-serialised original answer options")
     resolved: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")

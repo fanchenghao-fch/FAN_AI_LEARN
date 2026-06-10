@@ -105,6 +105,7 @@ class WrongQuestionItem(BaseModel):
     domain: str
     resolved: bool
     created_at: datetime
+    options: list[dict] | None = None  # JSON-deserialised answer options
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -130,6 +131,20 @@ class WrongQuestionDetailResponse(BaseModel):
     resolved_at: datetime | None = None
     session_title: str = ""
     session_id: str = ""
+    options: list[dict] | None = None  # JSON-deserialised answer options
+
+
+class RetryAnswerRequest(BaseModel):
+    """错题重做请求."""
+    user_answer: str = Field(..., min_length=1, description="用户重新选择的答案")
+
+
+class RetryAnswerResponse(BaseModel):
+    """错题重做响应."""
+    is_correct: bool
+    correct_answer: str
+    resolved: bool  # True if answer was correct → auto-resolved
+    coins_earned: int = 0  # Small reward for re-answering correctly
 
 
 class WrongQuestionsResponse(BaseModel):

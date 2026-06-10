@@ -16,15 +16,45 @@ from app.models.user_orm import LevelConfig  # noqa: F401  — ensure table is r
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown lifecycle for the FastAPI app."""
-    # Startup: create tables and seed level configs
+    # Startup: create tables, run migrations, and seed level configs
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await _migrate_wrong_questions_options(conn)
         await _seed_level_configs(conn)
 
     yield
 
     # Shutdown: dispose engine
     await engine.dispose()
+
+
+async def _migrate_wrong_questions_options(conn):
+    """Add options column to wrong_questions if it doesn't exist (P2 migration)."""
+    from sqlalchemy import text as _t
+
+    try:
+        # Check if column exists
+        result = await conn.execute(
+            _t(
+                """
+                SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'wrong_questions'
+                  AND COLUMN_NAME = 'options'
+                """
+            )
+        )
+        if result.scalar() == 0:
+            await conn.execute(
+                _t(
+                    "ALTER TABLE wrong_questions "
+                    "ADD COLUMN options TEXT DEFAULT NULL "
+                    "COMMENT 'JSON序列化的原始选项列表'"
+                )
+            )
+    except Exception:
+        # Table may not exist yet (first run) — safe to ignore
+        pass
 
 
 async def _seed_level_configs(conn):

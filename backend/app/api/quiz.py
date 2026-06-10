@@ -1,5 +1,6 @@
 """Quiz API routes — generation and analysis (WeChat Mini Program)."""
 
+import json
 import uuid
 
 from fastapi import APIRouter, Depends
@@ -228,6 +229,17 @@ async def analyze_quiz(
             # 4. Create WrongQuestion records
             for a in quiz_data:
                 if not a["is_correct"]:
+                    # Serialise original options to JSON if available
+                    question = next(
+                        (q for q in request.questions if q.get("id") == a["question_id"]),
+                        None,
+                    )
+                    options_json = None
+                    if question:
+                        raw_options = question.get("options")
+                        if raw_options and isinstance(raw_options, list):
+                            options_json = json.dumps(raw_options, ensure_ascii=False)
+
                     wrong_q = WrongQuestion(
                         user_id=user.id,
                         session_id=session_record.id,
@@ -236,6 +248,7 @@ async def analyze_quiz(
                         user_answer=a["user_answer"],
                         correct_answer=a["correct_answer"],
                         explanation=a["explanation"],
+                        options=options_json,
                         domain=knowledge_domain,
                         resolved=0,
                     )

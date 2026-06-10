@@ -82,6 +82,7 @@ export interface WrongQuestionItem {
   domain: string;
   resolved: boolean;
   created_at: string;
+  options?: { key: string; text: string }[] | null;
 }
 
 export interface WrongQuestionsByDomain {
@@ -91,6 +92,13 @@ export interface WrongQuestionsByDomain {
 }
 
 // ── API Response ────────────────────────────────────────────
+
+export interface RetryAnswerResponse {
+  is_correct: boolean;
+  correct_answer: string;
+  resolved: boolean;
+  coins_earned: number;
+}
 
 export interface UserAPIResponse<T = unknown> {
   code: number;

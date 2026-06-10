@@ -181,6 +181,124 @@
   margin-bottom: 10px;
 }
 
+/* ── Re-answer Section ────────────────────────────────── */
+.wrongdetail-retry-section {
+  margin-bottom: 14px;
+  padding: 14px;
+  background: white;
+  border: 2px dashed var(--yellow);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-comic-sm);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongdetail-retry-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wrongdetail-retry-hint {
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.wrongdetail-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wrongdetail-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--gray-light);
+  border: 2px solid var(--gray);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongdetail-option-btn.selected {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  box-shadow: var(--shadow-comic-sm);
+}
+
+.wrongdetail-option-btn.correct {
+  border-color: var(--green);
+  background: var(--green-light);
+}
+
+.wrongdetail-option-btn.wrong {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+
+.wrongdetail-option-btn.hint-correct {
+  border-color: var(--green);
+  border-style: solid;
+  box-shadow: 0 0 0 2px var(--green-light);
+}
+
+.wrongdetail-option-key {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: white;
+}
+
+.wrongdetail-option-btn.correct .wrongdetail-option-key {
+  background: var(--green);
+}
+
+.wrongdetail-option-btn.wrong .wrongdetail-option-key {
+  background: var(--red);
+}
+
+.wrongdetail-option-btn.hint-correct .wrongdetail-option-key {
+  background: var(--green);
+}
+
+.wrongdetail-option-text {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--dark);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.wrongdetail-option-check {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.wrongdetail-retry-loading {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 8px;
+}
+
 /* ── Resolved Banner ──────────────────────────────────── */
 .wrongdetail-resolved-banner {
   display: flex;

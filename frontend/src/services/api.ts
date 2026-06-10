@@ -302,6 +302,43 @@ export const userApi = {
       return { code: -1, message: (err as Error).message || "网络请求失败" };
     }
   },
+
+  /**
+   * Retry a wrong question (re-answer with A/B/C/D options).
+   * Correct answer → auto-resolved + coins; wrong answer → stays unresolved.
+   */
+  async retryWrongQuestion(
+    id: string,
+    userAnswer: string,
+  ): Promise<UserAPIResponse<import("../types/user").RetryAnswerResponse>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/wrong-questions/${id}/retry`,
+        method: "POST",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+        data: { user_answer: userAnswer },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<import("../types/user").RetryAnswerResponse>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
 };
 
 // ═══════════════════════════════════════════════════════════

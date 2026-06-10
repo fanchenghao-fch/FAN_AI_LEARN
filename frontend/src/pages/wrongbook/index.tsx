@@ -9,8 +9,10 @@ import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useUserStore } from "../../stores/userStore";
+import { useQuizStore } from "../../stores/quizStore";
 import { userApi } from "../../services/api";
 import type { WrongQuestionsByDomain } from "../../types/user";
+import type { Question } from "../../types/quiz";
 import "./index.scss";
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -35,6 +37,7 @@ function truncateText(text: string, maxLen = 40): string {
 
 export default function WrongBookPage() {
   const { isLoggedIn } = useUserStore();
+  const initSession = useQuizStore((s) => s.initSession);
   const [groups, setGroups] = useState<WrongQuestionsByDomain[]>([]);
   const [total, setTotal] = useState(0);
   const [resolvedCount, setResolvedCount] = useState(0);
@@ -81,6 +84,41 @@ export default function WrongBookPage() {
   const handleQuestionClick = useCallback((questionId: string) => {
     Taro.navigateTo({ url: `/pages/wrongdetail/index?id=${questionId}` });
   }, []);
+
+  const handleRetryAll = useCallback(async () => {
+    // Collect all unresolved wrong questions with options
+    const unresolveWithOptions = groups
+      .flatMap((g) => g.questions)
+      .filter((q) => !q.resolved && q.options && q.options.length > 0);
+
+    if (unresolveWithOptions.length === 0) {
+      Taro.showToast({ title: "没有可重做的错题", icon: "none" });
+      return;
+    }
+
+    // Build Question objects from wrong questions
+    const questions: Question[] = unresolveWithOptions.map((wq, idx) => ({
+      id: wq.question_id || `retry_${idx}`,
+      type: (wq.options && wq.options.length <= 2
+        ? "truefalse"
+        : "choice") as Question["type"],
+      content: wq.content,
+      options: wq.options?.map((o) => ({ key: o.key, text: o.text })) || [],
+      correct_answer: wq.correct_answer,
+      explanation: wq.explanation,
+      difficulty: "medium" as const,
+    }));
+
+    // Init quiz session and navigate
+    initSession(
+      `retry_${Date.now()}`,
+      "错题重做",
+      "综合",
+      questions,
+    );
+
+    Taro.navigateTo({ url: "/pages/quiz/index" });
+  }, [groups, initSession]);
 
   const handleLogin = useCallback(() => {
     Taro.navigateTo({ url: "/pages/login/index" });
@@ -207,6 +245,16 @@ export default function WrongBookPage() {
             <Text>已掌握 ({resolvedCount})</Text>
           </View>
         </View>
+
+        {/* Retry All Button */}
+        {unresolvedCount > 0 && (
+          <View
+            className="comic-btn red lg wrongbook-retry-all-btn"
+            onClick={handleRetryAll}
+          >
+            <Text>全部重做 ({unresolvedCount} 题)</Text>
+          </View>
+        )}
 
         {/* Grouped by Domain */}
         {groups.map((group) => (

@@ -275,3 +275,196 @@ class TestCheckIn:
         assert resp2.status_code == 200
         assert resp2.json()["data"]["checked_in"] is False
         assert "已签到" in resp2.json().get("message", "")
+
+
+# ═══════════════════════════════════════════════════════════════
+# POST /api/user/wrong-questions/{id}/retry
+# ═══════════════════════════════════════════════════════════════
+
+class TestRetryWrongQuestion:
+    """POST /api/user/wrong-questions/{id}/retry"""
+
+    def test_retry_requires_auth(self, client):
+        """Without token → 401."""
+        resp = client.post(
+            "/api/user/wrong-questions/fake-id/retry",
+            json={"user_answer": "B"},
+        )
+        assert resp.status_code == 401
+
+    def test_retry_not_found(self, client):
+        """Non-existent wrong question → 404."""
+        token, _ = _login(client, "重做404")
+        resp = client.post(
+            "/api/user/wrong-questions/nonexistent-id/retry",
+            json={"user_answer": "B"},
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 404
+
+    def test_retry_correct_answer_resolves(self, client):
+        """Correct re-answer → question is auto-resolved + coins awarded."""
+        token, user_id = _login(client, "重做正确测试")
+
+        # First, create a wrong question via analyze
+        questions = [
+            {"id": "q1", "type": "choice", "content": "Q1",
+             "correct_answer": "B", "explanation": "test", "difficulty": "easy",
+             "options": [{"key": "A", "text": "选A"}, {"key": "B", "text": "选B"}]},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "A", "is_correct": False, "time_spent": 10},
+        ]
+        resp = client.post(
+            "/api/quiz/analyze",
+            json={"quiz_id": "quiz_retry_001", "questions": questions, "answers": answers, "total_time": 10},
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+
+        # Get the wrong question ID
+        wq_resp = client.get("/api/user/wrong-questions", headers=_auth_header(token))
+        wq_data = wq_resp.json()["data"]
+        assert wq_data["total"] == 1
+        wrong_id = wq_data["groups"][0]["questions"][0]["id"]
+
+        # Re-answer with correct answer
+        retry_resp = client.post(
+            f"/api/user/wrong-questions/{wrong_id}/retry",
+            json={"user_answer": "B"},
+            headers=_auth_header(token),
+        )
+        assert retry_resp.status_code == 200
+        retry_data = retry_resp.json()
+        assert retry_data["code"] == 0
+        assert retry_data["data"]["is_correct"] is True
+        assert retry_data["data"]["resolved"] is True
+        assert retry_data["data"]["coins_earned"] == 2
+
+        # Verify the wrong question is now resolved
+        detail_resp = client.get(
+            f"/api/user/wrong-questions/{wrong_id}",
+            headers=_auth_header(token),
+        )
+        assert detail_resp.json()["data"]["resolved"] is True
+
+    def test_retry_wrong_answer_keeps_unresolved(self, client):
+        """Incorrect re-answer → question stays unresolved."""
+        token, _ = _login(client, "重做错误测试")
+
+        # Create a wrong question
+        questions = [
+            {"id": "q1", "type": "choice", "content": "Q1",
+             "correct_answer": "B", "explanation": "test", "difficulty": "easy"},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "C", "is_correct": False, "time_spent": 10},
+        ]
+        resp = client.post(
+            "/api/quiz/analyze",
+            json={"quiz_id": "quiz_retry_wrong", "questions": questions, "answers": answers, "total_time": 10},
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+
+        # Get wrong question ID
+        wq_resp = client.get("/api/user/wrong-questions", headers=_auth_header(token))
+        wrong_id = wq_resp.json()["data"]["groups"][0]["questions"][0]["id"]
+
+        # Re-answer with wrong answer again
+        retry_resp = client.post(
+            f"/api/user/wrong-questions/{wrong_id}/retry",
+            json={"user_answer": "C"},
+            headers=_auth_header(token),
+        )
+        assert retry_resp.status_code == 200
+        retry_data = retry_resp.json()
+        assert retry_data["data"]["is_correct"] is False
+        assert retry_data["data"]["resolved"] is False
+        assert retry_data["data"]["coins_earned"] == 0
+
+        # Verify still unresolved
+        detail_resp = client.get(
+            f"/api/user/wrong-questions/{wrong_id}",
+            headers=_auth_header(token),
+        )
+        assert detail_resp.json()["data"]["resolved"] is False
+
+    def test_retry_already_resolved_still_works(self, client):
+        """Re-answering an already resolved question should still return result."""
+        token, _ = _login(client, "重做已掌握测试")
+
+        # Create and resolve a wrong question
+        questions = [
+            {"id": "q1", "type": "choice", "content": "Q1",
+             "correct_answer": "B", "explanation": "test", "difficulty": "easy"},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "A", "is_correct": False, "time_spent": 10},
+        ]
+        client.post(
+            "/api/quiz/analyze",
+            json={"quiz_id": "quiz_resolved_retry", "questions": questions, "answers": answers, "total_time": 10},
+            headers=_auth_header(token),
+        )
+
+        wq_resp = client.get("/api/user/wrong-questions", headers=_auth_header(token))
+        wrong_id = wq_resp.json()["data"]["groups"][0]["questions"][0]["id"]
+
+        # First retry: correct answer → resolve
+        client.post(
+            f"/api/user/wrong-questions/{wrong_id}/retry",
+            json={"user_answer": "B"},
+            headers=_auth_header(token),
+        )
+
+        # Second retry on already resolved question
+        retry2 = client.post(
+            f"/api/user/wrong-questions/{wrong_id}/retry",
+            json={"user_answer": "B"},
+            headers=_auth_header(token),
+        )
+        assert retry2.status_code == 200
+        data2 = retry2.json()
+        assert data2["data"]["is_correct"] is True
+        assert data2["data"]["resolved"] is True
+        # Already resolved, no additional coins
+        assert data2["data"]["coins_earned"] == 0
+
+    def test_retry_preserves_options_in_detail(self, client):
+        """Wrong question detail should include original options for re-answer UI."""
+        token, _ = _login(client, "选项存储测试")
+
+        questions = [
+            {"id": "q1", "type": "choice", "content": "什么颜色？",
+             "correct_answer": "A", "explanation": "天是蓝的", "difficulty": "easy",
+             "options": [
+                 {"key": "A", "text": "蓝色"},
+                 {"key": "B", "text": "红色"},
+                 {"key": "C", "text": "绿色"},
+                 {"key": "D", "text": "黄色"},
+             ]},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "B", "is_correct": False, "time_spent": 5},
+        ]
+        client.post(
+            "/api/quiz/analyze",
+            json={"quiz_id": "quiz_options_test", "questions": questions, "answers": answers, "total_time": 5},
+            headers=_auth_header(token),
+        )
+
+        wq_resp = client.get("/api/user/wrong-questions", headers=_auth_header(token))
+        wrong_id = wq_resp.json()["data"]["groups"][0]["questions"][0]["id"]
+
+        # Detail should include options
+        detail = client.get(
+            f"/api/user/wrong-questions/{wrong_id}",
+            headers=_auth_header(token),
+        )
+        assert detail.status_code == 200
+        detail_data = detail.json()["data"]
+        assert detail_data["options"] is not None
+        assert len(detail_data["options"]) == 4
+        assert detail_data["options"][0]["key"] == "A"
+        assert detail_data["options"][0]["text"] == "蓝色"
