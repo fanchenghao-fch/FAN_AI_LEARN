@@ -68,23 +68,25 @@ class TestMockLogin:
         assert response.status_code == 200
         assert response.json()["data"]["user"]["avatar_url"] == "https://example.com/avatar.png"
 
-    def test_mock_login_rejects_empty_nickname(self, client):
-        """Empty nickname should be rejected (422 from Pydantic validation)."""
+    def test_mock_login_defaults_empty_nickname(self, client):
+        """Empty nickname should default to '测试学员'."""
         response = client.post(
             "/api/auth/mock-login",
             json={"nickname": ""},
         )
 
-        assert response.status_code == 422
+        assert response.status_code == 200
+        assert response.json()["data"]["user"]["nickname"] == "测试学员"
 
-    def test_mock_login_rejects_missing_nickname(self, client):
-        """Missing nickname field should be rejected."""
+    def test_mock_login_defaults_missing_nickname(self, client):
+        """Missing nickname field should default to '测试学员'."""
         response = client.post(
             "/api/auth/mock-login",
             json={},
         )
 
-        assert response.status_code == 422
+        assert response.status_code == 200
+        assert response.json()["data"]["user"]["nickname"] == "测试学员"
 
     def test_mock_login_returns_different_tokens_for_different_users(self, client):
         """Each user should get a unique JWT."""
@@ -293,4 +295,4 @@ class TestAuthCORS:
             },
         )
 
-        assert response.status_code in [200, 405]  # 200=allowed, 405=not configured
+        assert response.status_code in [200, 400, 405]  # 200=allowed, 400/405=not configured

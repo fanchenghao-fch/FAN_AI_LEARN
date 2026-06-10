@@ -378,3 +378,94 @@
   font-size: 0.85rem;
   word-break: break-all;  /* mini-program compat */
 }
+
+/* ── Reward Section ───────────────────────────────────── */
+.result-reward {
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.result-reward-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.result-reward-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-reward-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.result-reward-val {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.result-reward-exp-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--purple);
+  border: 2.5px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.result-reward-bonus {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.result-level-up {
+  background: var(--yellow-light);
+  border: 2px solid var(--yellow-dark);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.result-level-up-text {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--yellow-dark);
+}
+
+/* ── Login Prompt ─────────────────────────────────────── */
+.result-login-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.result-login-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-login-text {
+  font-size: 0.78rem;
+  color: var(--dark);
+  line-height: 1.5;
+}

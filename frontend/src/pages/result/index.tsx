@@ -12,6 +12,7 @@ import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useQuizStore } from "../../stores/quizStore";
+import { useUserStore } from "../../stores/userStore";
 import type { QuizResult, WrongQuestionDetail } from "../../types/quiz";
 import "./index.scss";
 
@@ -38,6 +39,7 @@ export default function ResultPage() {
   const result = useQuizStore((s) => s.result);
   const session = useQuizStore((s) => s.session);
   const resetSession = useQuizStore((s) => s.resetSession);
+  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
 
   // Build local result if AI analysis hasn't completed
   const displayResult: QuizResult | null = result || (() => {
@@ -78,6 +80,14 @@ export default function ResultPage() {
 
   const handleShare = useCallback(() => {
     Taro.showToast({ title: "分享功能即将上线", icon: "none" });
+  }, []);
+
+  const handleLogin = useCallback(() => {
+    Taro.navigateTo({ url: "/pages/login/index" });
+  }, []);
+
+  const handleGoToMine = useCallback(() => {
+    Taro.navigateTo({ url: "/pages/mine/index" });
   }, []);
 
   if (!displayResult) {
@@ -154,6 +164,78 @@ export default function ResultPage() {
             <Text>分享成绩</Text>
           </View>
         </View>
+
+        {/* === Reward Section (logged-in users) === */}
+        {displayResult.reward && displayResult.reward.coins_earned > 0 && (
+          <View className="result-reward comic-card">
+            <View className="result-reward-header">
+              <View className="section-bar yellow" />
+              <Text style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}>
+                闯关奖励
+              </Text>
+            </View>
+            <View className="result-reward-items">
+              <View className="result-reward-item">
+                <View className="mine-coin-icon" style={{ width: 32, height: 32 }}>
+                  <View className="coin-circle" />
+                </View>
+                <Text className="result-reward-val">
+                  +{displayResult.reward.coins_earned} 金币
+                </Text>
+              </View>
+              <View className="result-reward-item">
+                <View className="result-reward-exp-icon">
+                  <Text style={{ fontWeight: 900, color: "white", fontSize: "0.7rem" }}>EXP</Text>
+                </View>
+                <Text className="result-reward-val">
+                  +{displayResult.reward.experience_earned} 经验
+                </Text>
+              </View>
+              {displayResult.reward.is_first_today && (
+                <View className="result-reward-item">
+                  <Text className="result-reward-bonus">🔥 每日首闯加成!</Text>
+                </View>
+              )}
+              {displayResult.reward.new_level && (
+                <View className="result-level-up">
+                  <Text className="result-level-up-text">
+                    🎉 升级了! Lv.{displayResult.reward.new_level} {displayResult.reward.new_level_title}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* === Login Prompt (anonymous users) === */}
+        {!isLoggedIn() && (
+          <View className="result-login-prompt comic-card dashed">
+            <Mascot mood="encouraging" size={40} />
+            <View className="result-login-info">
+              <Text className="result-login-text">
+                登录后可保存学习记录、积累金币、复习错题哦！
+              </Text>
+              <View
+                className="comic-btn primary sm"
+                style={{ marginTop: "8px", display: "inline-flex" }}
+                onClick={handleLogin}
+              >
+                <Text>立即登录</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* === Go to Mine (logged-in users) === */}
+        {isLoggedIn() && (
+          <View
+            className="comic-btn outline"
+            style={{ display: "flex", width: "100%", maxWidth: "100%", boxSizing: "border-box", marginBottom: "12px" }}
+            onClick={handleGoToMine}
+          >
+            <Text>查看我的学习记录</Text>
+          </View>
+        )}
 
         {/* === Divider === */}
         <View className="section-divider" />

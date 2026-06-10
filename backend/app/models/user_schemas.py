@@ -88,3 +88,66 @@ class HistoryPage(BaseModel):
     page: int
     page_size: int
     has_more: bool
+
+
+# ═══════════════════════════════════════════════════════════════
+# Wrong Questions
+# ═══════════════════════════════════════════════════════════════
+
+class WrongQuestionItem(BaseModel):
+    """错题列表项."""
+    id: str
+    question_id: str
+    content: str
+    user_answer: str
+    correct_answer: str
+    explanation: str
+    domain: str
+    resolved: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WrongQuestionsByDomain(BaseModel):
+    """按领域分组的错题."""
+    domain: str
+    count: int
+    questions: list[WrongQuestionItem]
+
+
+class WrongQuestionDetailResponse(BaseModel):
+    """错题详情（含 session 上下文）."""
+    id: str
+    question_id: str
+    content: str
+    user_answer: str
+    correct_answer: str
+    explanation: str
+    domain: str
+    resolved: bool
+    created_at: datetime
+    resolved_at: datetime | None = None
+    session_title: str = ""
+    session_id: str = ""
+
+
+class WrongQuestionsResponse(BaseModel):
+    """错题列表响应."""
+    groups: list[WrongQuestionsByDomain]
+    total: int
+    resolved_count: int = 0
+    unresolved_count: int = 0
+
+
+# ═══════════════════════════════════════════════════════════════
+# Quiz Result with Reward (extended for analyze endpoint)
+# ═══════════════════════════════════════════════════════════════
+
+class RewardInfo(BaseModel):
+    """答题奖励信息."""
+    coins_earned: int = 0
+    experience_earned: int = 0
+    new_level: int | None = None
+    new_level_title: str | None = None
+    is_first_today: bool = False

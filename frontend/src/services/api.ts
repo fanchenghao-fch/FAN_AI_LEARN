@@ -119,6 +119,192 @@ export const authApi = {
 };
 
 // ═══════════════════════════════════════════════════════════
+// User API
+// ═══════════════════════════════════════════════════════════
+
+export const userApi = {
+  /**
+   * Get current user's learning statistics.
+   */
+  async getStats(): Promise<UserAPIResponse<import("../types/user").UserStats>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/stats`,
+        method: "GET",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<import("../types/user").UserStats>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+
+  /**
+   * Get paginated quiz history.
+   */
+  async getHistory(
+    page = 1,
+    pageSize = 20,
+  ): Promise<UserAPIResponse<import("../types/user").HistoryPage>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/history`,
+        method: "GET",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+        data: { page, page_size: pageSize },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<import("../types/user").HistoryPage>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+
+  /**
+   * Get wrong questions, optionally filtered by resolved status.
+   */
+  async getWrongQuestions(
+    resolved?: number,
+  ): Promise<UserAPIResponse<import("../types/user").WrongQuestionsByDomain[]>> {
+    try {
+      const data: Record<string, unknown> = {};
+      if (resolved !== undefined) {
+        data.resolved = resolved;
+      }
+
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/wrong-questions`,
+        method: "GET",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+        data,
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<import("../types/user").WrongQuestionsByDomain[]>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+
+  /**
+   * Get a single wrong question detail.
+   */
+  async getWrongQuestionDetail(
+    id: string,
+  ): Promise<UserAPIResponse<Record<string, unknown>>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/wrong-questions/${id}`,
+        method: "GET",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode === 404) {
+        return { code: 404, message: "错题不存在" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<Record<string, unknown>>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+
+  /**
+   * Mark a wrong question as resolved (已掌握).
+   */
+  async resolveWrongQuestion(
+    id: string,
+  ): Promise<UserAPIResponse<{ resolved: boolean; resolved_at?: string }>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/wrong-questions/${id}/resolve`,
+        method: "POST",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<{ resolved: boolean; resolved_at?: string }>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
 // AbortController polyfill
 // ═══════════════════════════════════════════════════════════
 

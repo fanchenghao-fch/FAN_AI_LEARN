@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.quiz import router as quiz_router
 from app.api.auth import router as auth_router
+from app.api.user import router as user_router
 from app.config import settings
 from app.database import Base, engine
 from app.models.user_orm import LevelConfig  # noqa: F401  — ensure table is registered
@@ -69,6 +70,7 @@ app.add_middleware(
 # Register routers
 app.include_router(quiz_router)
 app.include_router(auth_router)
+app.include_router(user_router)
 
 
 @app.get("/")

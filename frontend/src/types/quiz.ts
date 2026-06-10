@@ -67,6 +67,14 @@ export interface WrongQuestionDetail {
   explanation: string;
 }
 
+export interface RewardInfo {
+  coins_earned: number;
+  experience_earned: number;
+  new_level: number | null;
+  new_level_title: string | null;
+  is_first_today: boolean;
+}
+
 export interface QuizResult {
   quiz_id: string;
   title: string;
@@ -78,6 +86,7 @@ export interface QuizResult {
   wrong_questions: WrongQuestionDetail[];
   mastery_radar: Record<string, number>;
   study_suggestion: string;
+  reward?: RewardInfo;
 }
 
 // ── Validation Types ──────────────────────────────────────

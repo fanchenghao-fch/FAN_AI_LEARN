@@ -1,2 +1,239 @@
-/* 错题详情 — P2 待实现 */
-.wrongdetail-page { display: flex; flex-direction: column; }
+/* ============================================================
+   错题详情 — Campus Comic 校园漫画风格
+   ============================================================ */
+
+.wrongdetail-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Empty & Loading ──────────────────────────────────── */
+.wrongdetail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+}
+
+.wrongdetail-empty-speech {
+  max-width: 250px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.wrongdetail-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+/* ── Question Card ────────────────────────────────────── */
+.wrongdetail-question-card {
+  margin-bottom: 14px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongdetail-domain-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  background: var(--gray-light);
+  border: 1.5px solid var(--gray);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 0.7rem;
+  color: var(--dark);
+}
+
+.wrongdetail-question-text {
+  font-size: 0.9rem;
+  color: var(--black);
+  line-height: 1.6;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* ── Answer Comparison ────────────────────────────────── */
+.wrongdetail-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.wrongdetail-answer-card {
+  background: white;
+  border: 3px solid var(--black);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-comic-sm);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongdetail-answer-card.wrong {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+
+.wrongdetail-answer-card.correct {
+  border-color: var(--green);
+  background: var(--green-light);
+}
+
+.wrongdetail-answer-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wrongdetail-answer-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wrong-icon {
+  background: var(--red);
+}
+
+.correct-icon {
+  background: var(--green);
+}
+
+.wrongdetail-icon-text {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: white;
+}
+
+.wrongdetail-answer-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.wrongdetail-answer-text {
+  font-size: 0.88rem;
+  color: var(--dark);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.wrongdetail-answer-text.correct-text {
+  color: var(--green-dark);
+}
+
+/* ── Explanation ──────────────────────────────────────── */
+.wrongdetail-explanation {
+  margin-bottom: 14px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongdetail-exp-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.wrongdetail-exp-text {
+  font-size: 0.82rem;
+  color: var(--dark);
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* ── Meta ─────────────────────────────────────────────── */
+.wrongdetail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.wrongdetail-meta-text {
+  font-size: 0.72rem;
+  color: var(--gray);
+}
+
+/* ── Resolve Button ───────────────────────────────────── */
+.wrongdetail-resolve-btn {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+/* ── Resolved Banner ──────────────────────────────────── */
+.wrongdetail-resolved-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  background: var(--green-light);
+  border: 3px solid var(--green);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-comic-sm);
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongdetail-resolved-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrongdetail-resolved-text {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+/* ── Back Button ──────────────────────────────────────── */
+.wrongdetail-back-btn {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+
+/* ── Mascot ───────────────────────────────────────────── */
+.wrongdetail-mascot {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.wrongdetail-mascot-speech {
+  flex: 1;
+  font-size: 0.78rem;
+}

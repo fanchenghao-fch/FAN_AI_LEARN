@@ -1,2 +1,290 @@
-/* 个人中心 — P1 待实现 */
-.mine-page { display: flex; flex-direction: column; }
+/* ============================================================
+   个人中心 — Campus Comic 校园漫画风格
+   ============================================================ */
+
+.mine-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Not Logged In ─────────────────────────────────────── */
+.mine-mascot-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0 24px;
+}
+
+.mine-mascot-wrap {
+  flex-shrink: 0;
+}
+
+.mine-speech {
+  max-width: 260px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.mine-speech-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.mine-login-btn {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── User Info Card ───────────────────────────────────── */
+.mine-user-card {
+  margin-bottom: 12px;
+}
+
+.mine-user-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+/* CSS avatar circle */
+.mine-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 3px solid var(--black);
+  background: var(--blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-comic-sm);
+  flex-shrink: 0;
+}
+
+.mine-avatar-inner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mine-avatar-text {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: white;
+}
+
+.mine-user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mine-nickname {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.mine-level-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--black);
+}
+
+.mine-level-text {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  color: white;
+  font-weight: 700;
+  text-shadow: 0.5px 0.5px 0 var(--black);
+}
+
+/* ── Exp Bar ──────────────────────────────────────────── */
+.mine-exp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mine-exp-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mine-exp-label {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.mine-exp-val {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.mine-exp-bar {
+  height: 8px;
+}
+
+.mine-exp-hint {
+  font-size: 0.68rem;
+  color: var(--gray);
+  text-align: right;
+}
+
+/* ── Coins Card ────────────────────────────────────────── */
+.mine-coins-card {
+  margin-bottom: 12px;
+}
+
+.mine-coins-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* CSS gold coin */
+.mine-coin-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--black);
+  background: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-comic-sm);
+  flex-shrink: 0;
+}
+
+.coin-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--yellow-dark);
+  border: 2px solid var(--black);
+}
+
+.mine-coins-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mine-coins-num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--yellow-dark);
+}
+
+.mine-coins-label {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+/* ── Stats Row ────────────────────────────────────────── */
+.mine-stats-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mine-stat-item {
+  flex: 1;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: var(--shadow-comic-sm);
+}
+
+.mine-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--black);
+  display: block;
+}
+
+.mine-stat-label {
+  font-size: 0.7rem;
+  color: var(--gray);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ── Menu ─────────────────────────────────────────────── */
+.mine-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 16px;
+}
+
+.mine-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: transform 0.1s ease;
+}
+
+.mine-menu-item:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.mine-menu-text {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.mine-menu-arrow {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--gray);
+}
+
+/* ── Logout ───────────────────────────────────────────── */
+.mine-logout-btn {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+/* ── Footer Mascot ────────────────────────────────────── */
+.mine-footer-mascot {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.mine-footer-speech {
+  flex: 1;
+  font-size: 0.78rem;
+}

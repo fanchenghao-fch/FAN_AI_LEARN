@@ -1,2 +1,119 @@
-/* 错题本 — P2 待实现 */
-.wrongbook-page { display: flex; flex-direction: column; }
+/* ============================================================
+   错题本 — Campus Comic 校园漫画风格
+   ============================================================ */
+
+.wrongbook-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Empty & Loading ──────────────────────────────────── */
+.wrongbook-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+}
+
+.wrongbook-empty-speech {
+  max-width: 250px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.wrongbook-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+/* ── Filter Tabs ──────────────────────────────────────── */
+.wrongbook-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.wrongbook-tabs .comic-btn {
+  display: flex;
+  box-sizing: border-box;
+}
+
+.wrongbook-tabs .comic-btn.green {
+  background: var(--green);
+  color: white;
+}
+
+.badge.green {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+/* ── Domain Group ─────────────────────────────────────── */
+.wrongbook-group {
+  margin-bottom: 14px;
+}
+
+.wrongbook-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wrongbook-domain-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--black);
+  flex: 1;
+}
+
+.wrongbook-count-badge {
+  font-size: 0.65rem;
+}
+
+/* ── Wrong Question Item ──────────────────────────────── */
+.wrongbook-item {
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wrongbook-item:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.wrongbook-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wrongbook-item-q {
+  flex: 1;
+  font-size: 0.82rem;
+  color: var(--black);
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.wrongbook-item-bottom {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wrongbook-item-date {
+  font-size: 0.68rem;
+  color: var(--gray);
+}

@@ -1,4 +1,4 @@
-"""Auth API routes: WeChat login and current user."""
+"""Auth API routes: WeChat login, mock login (dev/test), and current user."""
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,6 +41,55 @@ async def wechat_login(
     # Update union_id if newly available
     if union_id and user.union_id is None:
         user.union_id = union_id
+
+    token = create_jwt(user.id)
+    user_brief = await user_to_brief(user, db)
+
+    return {
+        "code": 0,
+        "message": "ok",
+        "data": LoginResponse(token=token, user=user_brief).model_dump(),
+    }
+
+
+# ── Mock Login (dev/test only) ────────────────────────────────
+
+from pydantic import BaseModel as _BaseModel
+
+
+class MockLoginRequest(_BaseModel):
+    """Mock login request body — no WeChat code needed."""
+    nickname: str | None = None
+    avatar_url: str | None = None
+
+
+@router.post("/mock-login", response_model=dict)
+async def mock_login(
+    body: MockLoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Dev/test mock login: creates user by nickname (no WeChat required).
+
+    If a user with the same nickname already exists, returns that user.
+    Otherwise creates a new user with the given nickname.
+    """
+    nickname = body.nickname or "测试学员"
+
+    # Try to find existing user by nickname
+    from sqlalchemy import select as _select
+    result = await db.execute(
+        _select(User).where(User.nickname == nickname)
+    )
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(
+            nickname=nickname,
+            avatar_url=body.avatar_url,
+        )
+        db.add(user)
+        await db.flush()
+        await db.refresh(user)
 
     token = create_jwt(user.id)
     user_brief = await user_to_brief(user, db)
