@@ -1,5 +1,138 @@
 # 阿拉灯神丁 — 版本说明
 
+## v1.3.0 — 用户系统 P1：个人中心 + 积分 + 错题本
+
+**发布日期：** 2026-06-10  
+**提交：** `82a427b`  
+**平台：** 微信小程序
+
+---
+
+### 一、重大新增
+
+#### 1.1 用户积分与成长系统
+- **积分计算**（`backend/app/services/points.py`）：
+  - 基础 +10 金币/次闯关
+  - 正确 +2 金币/题
+  - 连击加成：+5（combo≥5）、+15（combo≥10）
+  - 每日首闯加成：+20
+  - 单次上限：100 金币
+- **经验值**：1 exp = 1 coin（1:1 映射）
+- **5 级等级体系**：
+  - Lv1 初学萌新 (0-99) → Lv2 知识学徒 (100-299) → Lv3 学习达人 (300-599) → Lv4 百科高手 (600-999) → Lv5 博学大师 (1000+)
+- **每日打卡**：首次闯关自动签到，计算连续打卡天数
+- **自动升级**：经验达标自动提升等级
+
+#### 1.2 自动记录保存
+- 改造 `POST /api/quiz/analyze`：
+  - **登录用户**：自动创建 QuizSessionRecord、WrongQuestion、CheckIn，发放金币/经验
+  - **匿名用户**：正常获取分析结果，不保存记录
+  - 响应新增 `reward` 字段（coins_earned, experience_earned, level_up 信息）
+
+#### 1.3 六个用户 API 端点
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `GET` | `/api/user/stats` | 学习统计（闯关数/正确率/打卡/等级进度） |
+| `GET` | `/api/user/history?page=&page_size=` | 分页历史记录 |
+| `GET` | `/api/user/wrong-questions?resolved=` | 错题列表（按领域分组） |
+| `GET` | `/api/user/wrong-questions/{id}` | 错题详情（含 session 上下文） |
+| `POST` | `/api/user/wrong-questions/{id}/resolve` | 标记已掌握 |
+| `POST` | `/api/user/checkin` | 手动打卡 |
+
+#### 1.4 前端四个完整页面
+
+**个人中心**（`pages/mine`）：
+- 用户卡片（CSS 圆形头像、昵称、等级徽章）
+- 经验进度条（当前经验 / 升级所需）
+- 金币展示（CSS 金币图标）
+- 统计三连（累计闯关 / 正确率 / 连续打卡）
+- 菜单导航（学习历史 / 错题本 / 关于）
+- 退出登录（带确认弹窗）
+- 未登录引导（Mascot + 去登录按钮）
+
+**学习历史**（`pages/history`）：
+- 分页列表，滚动到底自动加载更多
+- 每项：标题、领域标签、得分、正确率、用时、日期
+- 空状态引导
+
+**错题本**（`pages/wrongbook`）：
+- 全部/待复习/已掌握 Tab 筛选
+- 按知识领域分组展示
+- 每项：题目预览、已掌握/待复习 badge、日期
+- 点击跳转错题详情
+
+**错题详情**（`pages/wrongdetail`）：
+- 完整题目展示
+- 答案对比（红色错误 vs 绿色正确）
+- 解析卡片
+- "标记为已掌握" 按钮 / 已掌握横幅
+- 所属闯关、错题时间
+
+#### 1.5 结果页改造
+- 登录用户：显示奖励信息（金币/经验/每日首闯/升级）
+- 匿名用户：提示"登录后可保存学习记录"
+- "查看我的学习记录"快捷入口
+
+---
+
+### 二、TDD 测试覆盖
+
+| 测试文件 | 用例数 | 覆盖内容 |
+|----------|--------|----------|
+| `test_points.py` | 27 | 金币计算（基础/正确/连击/首日/上限）、经验、打卡天数、等级升级 |
+| `test_user_api.py` | 18 | stats/history/wrong-questions/detail/resolve/checkin 全部端点 |
+| `test_analyze_with_user.py` | 9 | 登录用户 analyze → session/错题/打卡/金币/经验/等级；匿名用户无奖励 |
+| `test_auth.py` | 16 | mock-login 适配、wechat-login、me、JWT、CORS |
+| **合计** | **70** | **全部通过** |
+
+---
+
+### 三、技术决策
+
+#### 3.1 双鉴权依赖模式
+- `get_current_user`：返回 `User`，失败抛 401 → 用户 API
+- `get_optional_user`：返回 `User | None` → quiz analyze（登录/匿名双通道）
+- 保持了 P0 的 quiz 核心流程不变
+
+#### 3.2 前端页面风格
+- 全部遵循 Campus Comic 校园漫画风格
+- 使用全局 CSS 变量（`var(--blue)`, `var(--shadow-comic)` 等）
+- CSS 图形（头像、金币、等级徽章）替代图片，节省小程序包体积
+
+---
+
+### 四、文件变更统计
+
+| 类别 | 新增 | 修改 | 合计 |
+|------|------|------|------|
+| 后端 | 5 | 4 | 9 |
+| 前端 | 0 | 13 | 13 |
+| **合计** | **5** | **17** | **22** |
+
+```
+新增:
+  backend/app/api/user.py              (+285)
+  backend/app/services/points.py       (+189)
+  backend/tests/test_points.py         (+185)
+  backend/tests/test_user_api.py       (+277)
+  backend/tests/test_analyze_with_user.py (+237)
+
+修改 (主要):
+  backend/app/api/quiz.py              (重写 analyze 端点)
+  backend/app/api/auth.py              (+mock-login 端点)
+  backend/app/main.py                  (+user_router)
+  backend/app/models/user_schemas.py   (+WrongQuestion/RewardInfo schemas)
+  frontend/src/pages/mine/*            (完整重写: 个人中心)
+  frontend/src/pages/history/*         (完整重写: 学习历史)
+  frontend/src/pages/wrongbook/*       (完整重写: 错题本)
+  frontend/src/pages/wrongdetail/*     (完整重写: 错题详情)
+  frontend/src/pages/result/*          (+奖励/登录引导)
+  frontend/src/services/api.ts         (+userApi)
+  frontend/src/types/quiz.ts           (+RewardInfo)
+```
+
+---
+
 ## v1.2.0 — 平台纯净化：移除 H5/Web
 
 **发布日期：** 2026-06-10  
