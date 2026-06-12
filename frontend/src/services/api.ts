@@ -339,6 +339,44 @@ export const userApi = {
       return { code: -1, message: (err as Error).message || "网络请求失败" };
     }
   },
+
+  /**
+   * Get a single quiz session detail with wrong questions.
+   */
+  async getSessionDetail(
+    sessionId: string,
+  ): Promise<UserAPIResponse<import("../types/user").SessionDetail>> {
+    try {
+      const res = await Taro.request({
+        url: `${API_BASE}/api/user/sessions/${sessionId}`,
+        method: "GET",
+        header: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+      });
+
+      if (res.statusCode === 401) {
+        clearToken();
+        return { code: 401, message: "登录已过期，请重新登录" };
+      }
+
+      if (res.statusCode === 404) {
+        return { code: 404, message: "闯关记录不存在" };
+      }
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return {
+          code: res.statusCode,
+          message: (res.data as { detail?: string })?.detail || `HTTP ${res.statusCode}`,
+        };
+      }
+
+      return res.data as UserAPIResponse<import("../types/user").SessionDetail>;
+    } catch (err) {
+      return { code: -1, message: (err as Error).message || "网络请求失败" };
+    }
+  },
 };
 
 // ═══════════════════════════════════════════════════════════

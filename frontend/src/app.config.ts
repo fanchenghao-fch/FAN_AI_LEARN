@@ -9,6 +9,8 @@ export default defineAppConfig({
     "pages/history/index",
     "pages/wrongbook/index",
     "pages/wrongdetail/index",
+    "pages/sessiondetail/index",
+    "pages/about/index",
   ],
   window: {
     backgroundTextStyle: "light",

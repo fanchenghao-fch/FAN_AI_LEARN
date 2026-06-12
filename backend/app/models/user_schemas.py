@@ -156,6 +156,38 @@ class WrongQuestionsResponse(BaseModel):
 
 
 # ═══════════════════════════════════════════════════════════════
+# Session Detail (for history drill-down)
+# ═══════════════════════════════════════════════════════════════
+
+class SessionWrongQuestion(BaseModel):
+    """简化的错题信息（会话详情中用）."""
+    id: str
+    question_id: str
+    content: str
+    user_answer: str
+    correct_answer: str
+    explanation: str
+    resolved: bool
+    created_at: datetime
+
+
+class SessionDetailResponse(BaseModel):
+    """单次闯关会话详情."""
+    session_id: str
+    quiz_id: str
+    title: str
+    domain: str
+    score: int
+    total: int
+    accuracy: float
+    time_spent: int
+    combo_max: int
+    coins_earned: int
+    created_at: datetime
+    wrong_questions: list[SessionWrongQuestion] = []
+
+
+# ═══════════════════════════════════════════════════════════════
 # Quiz Result with Reward (extended for analyze endpoint)
 # ═══════════════════════════════════════════════════════════════
 

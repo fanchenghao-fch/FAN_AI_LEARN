@@ -110,6 +110,8 @@ export default function QuizPage() {
       try {
         const analyzeReq: QuizAnalyzeRequest = {
           quiz_id: session.quiz_id,
+          title: session.title,
+          knowledge_domain: session.knowledge_domain,
           questions: questions.map((q) => ({
             id: q.id,
             content: q.content,
@@ -360,14 +362,14 @@ export default function QuizPage() {
           </View>
         ) : (
           <View className="action-row">
-            <View className="comic-btn outline sm" onClick={handleSkip}>
-              <Text>跳过</Text>
-            </View>
             <View
               className={`comic-btn outline sm${currentIndex === 0 ? " disabled" : ""}`}
               onClick={() => { if (currentIndex > 0) goToPrevQuestion(); }}
             >
               <Text>上一题</Text>
+            </View>
+            <View className="comic-btn outline sm" onClick={handleSkip}>
+              <Text>跳过</Text>
             </View>
           </View>
         )}

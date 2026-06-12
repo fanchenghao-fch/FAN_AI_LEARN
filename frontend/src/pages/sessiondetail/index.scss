@@ -1,0 +1,145 @@
+/* ============================================================
+   闯关详情页 — Campus Comic 校园漫画风格
+   ============================================================ */
+
+.sessiondetail-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Loading & Error ──────────────────────────────────── */
+.sessiondetail-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 12px;
+}
+
+/* ── Score Header ─────────────────────────────────────── */
+.sessiondetail-hero {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.sessiondetail-score {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sessiondetail-accuracy {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+/* ── Stats Row ────────────────────────────────────────── */
+.sessiondetail-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sessiondetail-stat-item {
+  flex: 1;
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  padding: 10px 6px;
+  text-align: center;
+  box-shadow: var(--shadow-comic-sm);
+}
+
+.sessiondetail-stat-val {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--black);
+  display: block;
+}
+
+.sessiondetail-stat-label {
+  font-size: 0.65rem;
+  color: var(--gray);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ── Wrong Questions ──────────────────────────────────── */
+.sessiondetail-wq-section {
+  margin-bottom: 14px;
+}
+
+.sessiondetail-wq-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sessiondetail-wq-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.sessiondetail-wq-item {
+  background: white;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-comic-sm);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.sessiondetail-wq-content {
+  font-size: 0.82rem;
+  color: var(--black);
+  line-height: 1.4;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+
+.sessiondetail-wq-answers {
+  font-size: 0.75rem;
+  display: flex;
+  gap: 10px;
+}
+
+.sessiondetail-wq-user {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.sessiondetail-wq-correct {
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ── No wrong questions ───────────────────────────────── */
+.sessiondetail-all-correct {
+  text-align: center;
+  padding: 20px 0;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--green);
+}
+
+/* ── Back button ──────────────────────────────────────── */
+.sessiondetail-back-btn {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-top: auto;
+  margin-bottom: 12px;
+}

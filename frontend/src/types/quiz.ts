@@ -115,6 +115,8 @@ export interface QuizGenerateRequest {
 
 export interface QuizAnalyzeRequest {
   quiz_id: string;
+  title?: string;
+  knowledge_domain?: string;
   questions: Record<string, unknown>[];
   answers: Record<string, unknown>[];
   total_time: number;

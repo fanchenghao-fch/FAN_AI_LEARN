@@ -42,7 +42,8 @@
 
 /* ── User Info Card ───────────────────────────────────── */
 .mine-user-card {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
 }
 
 .mine-user-top {
@@ -150,7 +151,8 @@
 
 /* ── Coins Card ────────────────────────────────────────── */
 .mine-coins-card {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
 }
 
 .mine-coins-row {
@@ -202,7 +204,7 @@
 .mine-stats-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .mine-stat-item {
@@ -235,16 +237,16 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .mine-menu-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   cursor: pointer;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   transition: transform 0.1s ease;
 }
 
@@ -273,7 +275,7 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 /* ── Footer Mascot ────────────────────────────────────── */
@@ -281,10 +283,11 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .mine-footer-speech {
   flex: 1;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
+  padding: 8px 12px;
 }

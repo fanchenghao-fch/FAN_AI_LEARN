@@ -22,6 +22,8 @@ from app.models.user_schemas import (
     HistoryItem,
     HistoryPage,
     RetryAnswerRequest,
+    SessionDetailResponse,
+    SessionWrongQuestion,
     UserStats,
     WrongQuestionDetailResponse,
     WrongQuestionItem,
@@ -197,7 +199,20 @@ async def get_wrong_questions(
     db: AsyncSession = Depends(get_db),
 ):
     """Get wrong questions grouped by domain."""
-    # Build query
+    # ── Fetch unfiltered totals (always from ALL wrong questions) ──
+    total_result = await db.execute(
+        select(
+            func.count(WrongQuestion.id).label("total"),
+            func.sum(case((WrongQuestion.resolved == 1, 1), else_=0)).label("resolved_count"),
+            func.sum(case((WrongQuestion.resolved == 0, 1), else_=0)).label("unresolved_count"),
+        ).where(WrongQuestion.user_id == user.id)
+    )
+    totals_row = total_result.one()
+    total = totals_row.total or 0
+    resolved_count = totals_row.resolved_count or 0
+    unresolved_count = totals_row.unresolved_count or 0
+
+    # ── Fetch filtered list for display ──
     conditions = [WrongQuestion.user_id == user.id]
     if resolved is not None:
         conditions.append(WrongQuestion.resolved == resolved)
@@ -226,16 +241,12 @@ async def get_wrong_questions(
         for domain, items in grouped.items()
     ]
 
-    # Count resolved/unresolved (separate queries for accurate totals)
-    resolved_count = sum(1 for wq in wrong_qs if wq.resolved)
-    unresolved_count = sum(1 for wq in wrong_qs if not wq.resolved)
-
     return {
         "code": 0,
         "message": "ok",
         "data": WrongQuestionsResponse(
             groups=groups,
-            total=len(wrong_qs),
+            total=total,
             resolved_count=resolved_count,
             unresolved_count=unresolved_count,
         ).model_dump(),
@@ -413,6 +424,74 @@ async def retry_wrong_question(
             "resolved": bool(wq.resolved),
             "coins_earned": coins_earned,
         },
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# GET /api/user/sessions/{session_id}
+# ═══════════════════════════════════════════════════════════════
+
+@router.get("/sessions/{session_id}")
+async def get_session_detail(
+    session_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get a single quiz session with its wrong questions."""
+    result = await db.execute(
+        select(QuizSessionRecord)
+        .where(
+            QuizSessionRecord.id == session_id,
+            QuizSessionRecord.user_id == user.id,
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if session is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="闯关记录不存在",
+        )
+
+    # Fetch wrong questions for this session
+    wq_result = await db.execute(
+        select(WrongQuestion)
+        .where(WrongQuestion.session_id == session_id)
+        .order_by(WrongQuestion.created_at.asc())
+    )
+    wrong_qs = wq_result.scalars().all()
+
+    wq_items = [
+        SessionWrongQuestion(
+            id=wq.id,
+            question_id=wq.question_id,
+            content=wq.content,
+            user_answer=wq.user_answer,
+            correct_answer=wq.correct_answer,
+            explanation=wq.explanation,
+            resolved=bool(wq.resolved),
+            created_at=wq.created_at,
+        )
+        for wq in wrong_qs
+    ]
+
+    return {
+        "code": 0,
+        "message": "ok",
+        "data": SessionDetailResponse(
+            session_id=session.id,
+            quiz_id=session.quiz_id,
+            title=session.title,
+            domain=session.domain,
+            score=session.score,
+            total=session.total,
+            accuracy=session.accuracy,
+            time_spent=session.time_spent,
+            combo_max=session.combo_max,
+            coins_earned=session.coins_earned,
+            created_at=session.created_at,
+            wrong_questions=wq_items,
+        ).model_dump(),
     }
 
 

@@ -233,3 +233,57 @@ class TestAnalyzeWithUser:
         assert stats["total_sessions"] == 1
         assert stats["accuracy"] > 0
         assert stats["streak_days"] >= 1
+
+    def test_knowledge_domain_stored_in_session(self, client):
+        """knowledge_domain from analyze request → stored in session record."""
+        token, user_id = _login(client, "领域存储测试")
+
+        payload = _analyze_payload("quiz_domain_001")
+        payload["knowledge_domain"] = "Python编程基础"
+
+        resp = client.post(
+            "/api/quiz/analyze",
+            json=payload,
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+
+        # Verify domain appears in history
+        hist_resp = client.get(
+            "/api/user/history",
+            headers=_auth_header(token),
+        )
+        assert hist_resp.status_code == 200
+        items = hist_resp.json()["data"]["items"]
+        assert len(items) == 1
+        assert items[0]["domain"] == "Python编程基础"
+
+        # Verify domain appears in session detail
+        detail_resp = client.get(
+            f"/api/user/sessions/{items[0]['session_id']}",
+            headers=_auth_header(token),
+        )
+        assert detail_resp.status_code == 200
+        assert detail_resp.json()["data"]["domain"] == "Python编程基础"
+
+    def test_knowledge_domain_defaults_to_comprehensive(self, client):
+        """When knowledge_domain is not provided, it defaults to '综合'."""
+        token, user_id = _login(client, "默认领域测试")
+
+        payload = _analyze_payload("quiz_nodefault_001")
+        # Do NOT set knowledge_domain
+
+        resp = client.post(
+            "/api/quiz/analyze",
+            json=payload,
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+
+        hist_resp = client.get(
+            "/api/user/history",
+            headers=_auth_header(token),
+        )
+        assert hist_resp.status_code == 200
+        items = hist_resp.json()["data"]["items"]
+        assert items[0]["domain"] == "综合"

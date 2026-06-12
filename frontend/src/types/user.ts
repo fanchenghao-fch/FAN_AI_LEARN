@@ -100,6 +100,32 @@ export interface RetryAnswerResponse {
   coins_earned: number;
 }
 
+export interface SessionWrongQuestion {
+  id: string;
+  question_id: string;
+  content: string;
+  user_answer: string;
+  correct_answer: string;
+  explanation: string;
+  resolved: boolean;
+  created_at: string;
+}
+
+export interface SessionDetail {
+  session_id: string;
+  quiz_id: string;
+  title: string;
+  domain: string;
+  score: number;
+  total: number;
+  accuracy: number;
+  time_spent: number;
+  combo_max: number;
+  coins_earned: number;
+  created_at: string;
+  wrong_questions: SessionWrongQuestion[];
+}
+
 export interface UserAPIResponse<T = unknown> {
   code: number;
   message: string;

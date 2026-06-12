@@ -5,15 +5,57 @@
  * All SVG icons replaced with emoji for WeChat Mini Program compatibility.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { View, Text, Textarea } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useUserStore } from "../../stores/userStore";
+import { userApi } from "../../services/api";
+import type { HistoryItem } from "../../types/user";
 import "./index.scss";
 
 export default function IndexPage() {
   const [knowledgeInput, setKnowledgeInput] = useState("");
+  const [streakDays, setStreakDays] = useState(0);
+  const [recentSessions, setRecentSessions] = useState<HistoryItem[]>([]);
+  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
+
+  // Fetch real streak days + recent sessions on mount (if logged in)
+  useEffect(() => {
+    if (isLoggedIn()) {
+      userApi.getStats().then((res) => {
+        if (res.code === 0 && res.data) {
+          setStreakDays(res.data.streak_days);
+        }
+      });
+      userApi.getHistory(1, 3).then((res) => {
+        if (res.code === 0 && res.data) {
+          setRecentSessions(res.data.items || []);
+        }
+      });
+    }
+  }, []);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return `${d.getMonth() + 1}月${d.getDate()}日`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const getDomainEmoji = (domain: string) => {
+    const map: Record<string, string> = {
+      "Python": "🐍", "编程": "💻", "数学": "📐", "物理": "⚡",
+      "化学": "🧪", "历史": "📜", "英语": "🔤", "生物": "🧬",
+      "地理": "🌍", "文学": "📚",
+    };
+    for (const [key, emoji] of Object.entries(map)) {
+      if (domain.includes(key)) return emoji;
+    }
+    return "📖";
+  };
 
   const handleStartQuiz = useCallback(() => {
     const input = knowledgeInput.trim();
@@ -41,9 +83,11 @@ export default function IndexPage() {
             </View>
             <Text>阿拉灯神丁</Text>
           </View>
-          <View className="badge hot">
-            <Text>连续学习3天</Text>
-          </View>
+          {streakDays > 0 && (
+            <View className="badge hot">
+              <Text>连续学习{streakDays}天</Text>
+            </View>
+          )}
         </View>
 
         {/* Mascot */}
@@ -92,26 +136,61 @@ export default function IndexPage() {
           <Text>开始闯关</Text>
         </View>
 
-        {/* Hot Quizzes */}
-        <View className="hot-quiz-section">
-          <View className="section-title">
-            <View className="section-bar" />
-            <Text>热门闯关</Text>
-          </View>
-          <View className="hot-quiz-list">
-            {["Python面试高频题50道", "中国近代史十大事件", "高考物理必考公式"].map((title, i) => (
-              <View key={i} className="hot-quiz-item" onClick={() => setKnowledgeInput(title)}>
-                <View className="quiz-icon" style={{ background: i === 0 ? "#FEF3C7" : i === 1 ? "#DBEAFE" : "#D1FAE5", fontWeight: 900 }}>
-                  <Text>{["Py", "史", "物"][i]}</Text>
-                </View>
-                <View className="quiz-info">
-                  <Text className="quiz-title">{title}</Text>
-                  <Text className="quiz-meta">{["1280人已闯关 · 中等难度", "890人已闯关 · 简单难度", "新上线 · 困难难度"][i]}</Text>
-                </View>
+        {/* Recent Quizzes — real data from user history */}
+        {isLoggedIn() && (
+          <View className="recent-quiz-section">
+            <View className="section-title">
+              <View className="section-bar" />
+              <Text>近期闯关</Text>
+            </View>
+            {recentSessions.length > 0 ? (
+              <View className="recent-quiz-list">
+                {recentSessions.map((s) => (
+                  <View
+                    key={s.session_id}
+                    className="recent-quiz-item"
+                    onClick={() => Taro.navigateTo({ url: `/pages/sessiondetail/index?sessionId=${s.session_id}` })}
+                  >
+                    <View className="quiz-icon" style={{ background: s.accuracy >= 0.8 ? "#D1FAE5" : s.accuracy >= 0.6 ? "#FEF3C7" : "#FEE2E2" }}>
+                      <Text style={{ fontSize: "0.85rem" }}>{getDomainEmoji(s.domain)}</Text>
+                    </View>
+                    <View className="quiz-info">
+                      <Text className="quiz-title">{s.title || s.domain || "闯关记录"}</Text>
+                      <Text className="quiz-meta">
+                        {s.score}/{s.total} 正确 · {Math.round(s.accuracy * 100)}% · {formatDate(s.created_at)}
+                      </Text>
+                    </View>
+                    <Text style={{ fontFamily: "var(--font-display)", color: "var(--gray)", fontSize: "1.1rem" }}>→</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            ) : (
+              <View className="recent-quiz-empty">
+                <Text style={{ fontFamily: "var(--font-display)", fontSize: "0.82rem", color: "var(--gray)" }}>
+                  完成首次闯关后，这里会显示你的闯关记录～
+                </Text>
+              </View>
+            )}
           </View>
-        </View>
+        )}
+
+        {/* Login prompt for anonymous users */}
+        {!isLoggedIn() && (
+          <View
+            className="recent-quiz-section"
+            onClick={() => Taro.navigateTo({ url: "/pages/login/index" })}
+          >
+            <View className="section-title">
+              <View className="section-bar" />
+              <Text>近期闯关</Text>
+            </View>
+            <View className="recent-quiz-empty" style={{ cursor: "pointer" }}>
+              <Text style={{ fontFamily: "var(--font-display)", fontSize: "0.82rem", color: "var(--blue)" }}>
+                登录后可查看闯关记录 →
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Bottom Nav */}
         <View className="nav-bar">

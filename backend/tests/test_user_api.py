@@ -468,3 +468,196 @@ class TestRetryWrongQuestion:
         assert len(detail_data["options"]) == 4
         assert detail_data["options"][0]["key"] == "A"
         assert detail_data["options"][0]["text"] == "蓝色"
+
+
+# ═══════════════════════════════════════════════════════════════
+# GET /api/user/sessions/{session_id}
+# ═══════════════════════════════════════════════════════════════
+
+class TestSessionDetail:
+    """GET /api/user/sessions/{session_id}"""
+
+    def test_session_detail_requires_auth(self, client):
+        """Without token → 401."""
+        resp = client.get("/api/user/sessions/fake-session-id")
+        assert resp.status_code == 401
+
+    def test_session_detail_not_found(self, client):
+        """Non-existent session → 404."""
+        token, _ = _login(client, "会话404")
+        resp = client.get(
+            "/api/user/sessions/nonexistent-session-id",
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 404
+
+    def test_session_detail_other_user_not_visible(self, client):
+        """User A cannot see User B's session."""
+        token_a, _ = _login(client, "会话用户A")
+        token_b, _ = _login(client, "会话用户B")
+
+        # User B creates a quiz session via analyze
+        questions = [
+            {"id": "q1", "type": "choice", "content": "Q1",
+             "correct_answer": "A", "explanation": "test", "difficulty": "easy"},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "B", "is_correct": False, "time_spent": 5},
+        ]
+        client.post(
+            "/api/quiz/analyze",
+            json={"quiz_id": "quiz_session_test", "questions": questions, "answers": answers, "total_time": 5},
+            headers=_auth_header(token_b),
+        )
+
+        # Get session ID from User B's history
+        history_resp = client.get(
+            "/api/user/history?page=1&page_size=1",
+            headers=_auth_header(token_b),
+        )
+        session_id = history_resp.json()["data"]["items"][0]["session_id"]
+
+        # User A tries to access User B's session → 404
+        resp = client.get(
+            f"/api/user/sessions/{session_id}",
+            headers=_auth_header(token_a),
+        )
+        assert resp.status_code == 404
+
+    def test_session_detail_returns_correct_data(self, client):
+        """Session detail returns session info + wrong questions."""
+        token, _ = _login(client, "会话详情测试")
+
+        # Create a quiz session with some wrong answers
+        questions = [
+            {"id": "q1", "type": "choice", "content": "Q1?",
+             "correct_answer": "A", "explanation": "exp1", "difficulty": "easy"},
+            {"id": "q2", "type": "choice", "content": "Q2?",
+             "correct_answer": "B", "explanation": "exp2", "difficulty": "medium"},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "A", "is_correct": True, "time_spent": 3},
+            {"question_id": "q2", "user_answer": "C", "is_correct": False, "time_spent": 7},
+        ]
+        client.post(
+            "/api/quiz/analyze",
+            json={
+                "quiz_id": "quiz_detail_001",
+                "knowledge_domain": "Python基础",
+                "questions": questions,
+                "answers": answers,
+                "total_time": 10,
+            },
+            headers=_auth_header(token),
+        )
+
+        # Get session from history
+        history_resp = client.get(
+            "/api/user/history?page=1&page_size=1",
+            headers=_auth_header(token),
+        )
+        session_id = history_resp.json()["data"]["items"][0]["session_id"]
+
+        # Fetch session detail
+        resp = client.get(
+            f"/api/user/sessions/{session_id}",
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["code"] == 0
+        detail = data["data"]
+
+        # Basic fields
+        assert detail["session_id"] == session_id
+        assert detail["quiz_id"] == "quiz_detail_001"
+        assert detail["domain"] == "Python基础"
+        assert detail["score"] == 1
+        assert detail["total"] == 2
+        assert detail["combo_max"] == 1
+        assert detail["time_spent"] == 10
+
+        # Wrong questions
+        assert len(detail["wrong_questions"]) == 1
+        wq = detail["wrong_questions"][0]
+        assert wq["question_id"] == "q2"
+        assert wq["user_answer"] == "C"
+        assert wq["correct_answer"] == "B"
+        assert wq["resolved"] is False
+
+
+# ═══════════════════════════════════════════════════════════════
+# Wrong questions count fix: totals should be unfiltered
+# ═══════════════════════════════════════════════════════════════
+
+class TestWrongQuestionsCounts:
+    """Verify total/resolved_count/unresolved_count are always unfiltered."""
+
+    def test_counts_are_unfiltered_regardless_of_filter(self, client):
+        """All/待复习/已掌握 tabs should show consistent unfiltered totals."""
+        token, _ = _login(client, "计数修复测试")
+
+        # Create a resolved wrong question (correct re-answer)
+        questions = [
+            {"id": "q1", "type": "choice", "content": "Q1",
+             "correct_answer": "A", "explanation": "test", "difficulty": "easy"},
+            {"id": "q2", "type": "choice", "content": "Q2",
+             "correct_answer": "B", "explanation": "test", "difficulty": "easy"},
+        ]
+        answers = [
+            {"question_id": "q1", "user_answer": "B", "is_correct": False, "time_spent": 5},
+            {"question_id": "q2", "user_answer": "C", "is_correct": False, "time_spent": 5},
+        ]
+        client.post(
+            "/api/quiz/analyze",
+            json={"quiz_id": "quiz_count_test", "questions": questions, "answers": answers, "total_time": 10},
+            headers=_auth_header(token),
+        )
+
+        # Resolve q1
+        wq_resp = client.get("/api/user/wrong-questions", headers=_auth_header(token))
+        wrong_items = wq_resp.json()["data"]["groups"][0]["questions"]
+        q1_id = next(q["id"] for q in wrong_items if q["question_id"] == "q1")
+
+        client.post(
+            f"/api/user/wrong-questions/{q1_id}/retry",
+            json={"user_answer": "A"},
+            headers=_auth_header(token),
+        )
+
+        # Fetch all (unfiltered)
+        all_resp = client.get("/api/user/wrong-questions", headers=_auth_header(token))
+        all_data = all_resp.json()["data"]
+        assert all_data["total"] == 2
+        assert all_data["resolved_count"] == 1
+        assert all_data["unresolved_count"] == 1
+
+        # Fetch 待复习 (filter=0)
+        unresolved_resp = client.get(
+            "/api/user/wrong-questions?resolved=0",
+            headers=_auth_header(token),
+        )
+        unresolved_data = unresolved_resp.json()["data"]
+        # totals should still be 2/1/1 (unfiltered)
+        assert unresolved_data["total"] == 2
+        assert unresolved_data["resolved_count"] == 1
+        assert unresolved_data["unresolved_count"] == 1
+        # But groups should only contain unresolved
+        for g in unresolved_data["groups"]:
+            for q in g["questions"]:
+                assert q["resolved"] is False
+
+        # Fetch 已掌握 (filter=1)
+        resolved_resp = client.get(
+            "/api/user/wrong-questions?resolved=1",
+            headers=_auth_header(token),
+        )
+        resolved_data = resolved_resp.json()["data"]
+        # totals should still be 2/1/1 (unfiltered)
+        assert resolved_data["total"] == 2
+        assert resolved_data["resolved_count"] == 1
+        assert resolved_data["unresolved_count"] == 1
+        # But groups should only contain resolved
+        for g in resolved_data["groups"]:
+            for q in g["questions"]:
+                assert q["resolved"] is True

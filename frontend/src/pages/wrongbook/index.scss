@@ -33,14 +33,23 @@
 /* ── Filter Tabs ──────────────────────────────────────── */
 .wrongbook-tabs {
   display: flex;
-  gap: 8px;
+  gap: 0;
   margin-bottom: 14px;
-  flex-wrap: wrap;
 }
 
 .wrongbook-tabs .comic-btn {
   display: flex;
   box-sizing: border-box;
+  flex: 1;
+  border-radius: 0;
+}
+
+.wrongbook-tabs .comic-btn:first-child {
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+}
+
+.wrongbook-tabs .comic-btn:last-child {
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
 
 .wrongbook-tabs .comic-btn.green {
@@ -51,15 +60,6 @@
 .badge.green {
   background: var(--green-light);
   color: var(--green-dark);
-}
-
-/* ── Retry All Button ─────────────────────────────────── */
-.wrongbook-retry-all-btn {
-  display: flex;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 14px;
 }
 
 /* ── Domain Group ─────────────────────────────────────── */

@@ -83,7 +83,12 @@ export default function MinePage() {
   if (!isLoggedIn() || !user) {
     return (
       <View className="app-phone-frame">
-        <ScrollView className="app-phone-content mine-page" scrollY>
+        <ScrollView
+          className="app-phone-content mine-page"
+          scrollY
+          enhanced
+          showScrollbar={false}
+        >
           <View className="status-bar-spacer" />
 
           <View className="mine-mascot-area">
@@ -126,7 +131,12 @@ export default function MinePage() {
 
   return (
     <View className="app-phone-frame">
-      <ScrollView className="app-phone-content mine-page" scrollY>
+      <ScrollView
+        className="app-phone-content mine-page"
+        scrollY
+        enhanced
+        showScrollbar={false}
+      >
         <View className="status-bar-spacer" />
 
         {/* ── User Info Card ──────────────────────────── */}
@@ -224,7 +234,10 @@ export default function MinePage() {
             <Text className="mine-menu-arrow">→</Text>
           </View>
 
-          <View className="mine-menu-item comic-card dashed">
+          <View
+            className="mine-menu-item comic-card"
+            onClick={() => Taro.navigateTo({ url: "/pages/about/index" })}
+          >
             <View className="section-bar yellow" />
             <Text className="mine-menu-text">关于阿拉灯神丁</Text>
             <Text className="mine-menu-arrow">→</Text>

@@ -43,6 +43,14 @@ class QuizAnalyzeRequest(BaseModel):
     """Request body for POST /api/quiz/analyze."""
 
     quiz_id: str
+    title: str | None = Field(
+        default=None,
+        description="Quiz title from generation (e.g. 'Python基础闯关')",
+    )
+    knowledge_domain: str | None = Field(
+        default=None,
+        description="Knowledge domain from quiz generation (e.g. 'Python编程基础')",
+    )
     questions: list[dict] = Field(description="Full question list with correct answers")
     answers: list[dict] = Field(
         description="User's answers: [{question_id, user_answer, is_correct, time_spent}]"

@@ -150,8 +150,20 @@ export default function ResultPage() {
           <View className="result-mascot">
             <Mascot
               mood={displayResult.accuracy >= 0.6 ? "happy" : "encouraging"}
-              size={70}
+              size={60}
             />
+            <View className="speech-bubble result-mascot-bubble">
+              <Text style={{ fontWeight: 700, fontFamily: "var(--font-display)" }}>灯灯：</Text>
+              <Text>
+                {displayResult.accuracy >= 0.9
+                  ? "太厉害了！你是学霸中的学霸！"
+                  : displayResult.accuracy >= 0.8
+                    ? "非常棒！继续保持这个势头！"
+                    : displayResult.accuracy >= 0.6
+                      ? "不错哦！再多练练会更好！"
+                      : "别灰心，每次错误都是进步的阶梯！"}
+              </Text>
+            </View>
           </View>
         </View>
 

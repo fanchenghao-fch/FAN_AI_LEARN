@@ -1,0 +1,120 @@
+/* ============================================================
+   关于页 — Campus Comic 校园漫画风格
+   ============================================================ */
+
+.about-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+}
+
+/* ── Hero ─────────────────────────────────────────────── */
+.about-hero {
+  text-align: center;
+  margin: 20px 0 16px;
+}
+
+.about-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 12px;
+  background: var(--blue);
+  border: 3px solid var(--black);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-comic);
+}
+
+.about-logo-text {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: white;
+  font-weight: 900;
+}
+
+.about-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--black);
+  display: block;
+}
+
+.about-tagline {
+  font-size: 0.85rem;
+  color: var(--gray);
+  display: block;
+  margin-top: 4px;
+}
+
+/* ── Info Card ────────────────────────────────────────── */
+.about-info-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
+.about-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1.5px dashed var(--gray-light);
+}
+
+.about-info-row:last-child {
+  border-bottom: none;
+}
+
+.about-info-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.about-info-value {
+  font-size: 0.82rem;
+  color: var(--dark);
+}
+
+/* ── Description Card ─────────────────────────────────── */
+.about-desc-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
+.about-desc-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.about-desc-text {
+  font-size: 0.82rem;
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+/* ── Footer Mascot ────────────────────────────────────── */
+.about-footer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: auto;
+  margin-bottom: 16px;
+}
+
+.about-footer-speech {
+  flex: 1;
+  font-size: 0.78rem;
+}

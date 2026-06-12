@@ -119,7 +119,7 @@ async def analyze_quiz(
         # Extract quiz metadata
         total_questions = len(request.questions)
         correct_count = sum(1 for a in request.answers if a.get("is_correct", False))
-        knowledge_domain = "未知领域"
+        knowledge_domain = request.knowledge_domain or "综合"
 
         # Build quiz data for analysis
         quiz_data = []
@@ -204,18 +204,11 @@ async def analyze_quiz(
                 else 0.0
             )
 
-            # Try to determine domain from the first question's content or use default
-            domain = "综合"
-            if request.questions:
-                first_q = request.questions[0]
-                # If quiz had a known domain, use it; otherwise "综合"
-                domain = first_q.get("domain", "综合") if isinstance(first_q, dict) else "综合"
-
             session_record = QuizSessionRecord(
                 user_id=user.id,
                 quiz_id=request.quiz_id,
                 domain=knowledge_domain,
-                title="闯关结果",
+                title=request.title or knowledge_domain or "闯关记录",
                 score=correct_count,
                 total=total_questions,
                 accuracy=accuracy,
@@ -284,7 +277,7 @@ async def analyze_quiz(
         # ── Build Response ──────────────────────────────────
         result = QuizResult(
             quiz_id=request.quiz_id,
-            title="闯关结果",
+            title=request.title or knowledge_domain or "闯关结果",
             score=correct_count,
             total_questions=total_questions,
             accuracy=round(correct_count / total_questions, 2) if total_questions > 0 else 0.0,

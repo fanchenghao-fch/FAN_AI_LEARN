@@ -200,7 +200,11 @@ export default function HistoryPage() {
           const accColor = getAccuracyColor(item.accuracy);
 
           return (
-            <View key={item.session_id} className="history-item comic-card">
+            <View
+              key={item.session_id}
+              className="history-item comic-card"
+              onClick={() => Taro.navigateTo({ url: `/pages/sessiondetail/index?sessionId=${item.session_id}` })}
+            >
               <View className="history-item-top">
                 <Text className="history-item-title">{item.title}</Text>
                 <Text className="history-item-domain">{item.domain}</Text>

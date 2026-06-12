@@ -1,5 +1,171 @@
 # 阿拉灯神丁 — 版本说明
 
+## v1.4.1 — 手动测试 13 项问题修复 + 闯关记录详情页
+
+**发布日期：** 2026-06-12  
+**平台：** 微信小程序
+
+---
+
+### 一、Bug 修复（13 项手动测试问题）
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 答题页 title 显示"闯关结果" | 后端 `quiz.py` analyze 端点硬编码 `title="闯关结果"` | `QuizAnalyzeRequest` 新增 `title` 字段，前端传入 `session.title` |
+| 2 | "上一题"和"跳过"按钮位置颠倒 | 前端 `quiz/index.tsx` action-row 中按钮顺序错误 | 交换两个按钮位置 |
+| 3 | 题干文字被截断 | `.question-card` 无高度限制，flex 布局挤压 | 添加 `max-height: 180px; overflow-y: auto` |
+| 4 | 解析文字被截断 | `.explanation-card` 同上 | 添加 `max-height: 140px; overflow-y: auto` |
+| 5 | 答题完成后出现多余滚动条 | `.quiz-page` 仅 `overflow-x: hidden`，未限制纵向 | 改为 `overflow: hidden` |
+| 6 | 结果页各区块间距过大 | margin/padding 过宽松 | 压缩 `result-score-ring`、`result-stats` 间距 |
+| 7 | 结果页缺少灯灯气泡文案 | 仅渲染 Mascot 组件，无对话气泡 | 新增 `speech-bubble`，根据正确率展示对应鼓励文案 |
+| 8 | 结果页奖励卡片对齐问题 | `.result-reward-val` 无最小宽度 | 添加 `min-width: 120px` |
+| 9 | 个人中心页出现滚动条 | mine 页面内容溢出 | ScrollView 添加 `enhanced` + `showScrollbar={false}`，CSS 间距全面压缩 |
+| 10 | 历史记录 title 显示"闯关结果" | 同 #1 | 同 #1 |
+| 11 | 历史记录卡片点击无跳转 | `history/index.tsx` 的 `history-item` 无 onClick | 添加 `onClick` 跳转至 `/pages/sessiondetail/index` |
+| 12 | 错题本 Tab 未两端对齐 | `.wrongbook-tabs` 按钮无 `flex: 1` | 按钮添加 `flex: 1`，首/末元素设置对应圆角 |
+| 13 | 移除"全部重做"功能 | 需简化错题本 | 删除 `handleRetryAll`、按钮 JSX、相关 import 和 CSS |
+
+### 二、新增页面
+
+#### 2.1 闯关记录详情（`pages/sessiondetail`）
+- 展示单次闯关完整信息：标题、领域、得分、正确率、用时、最高连击、金币
+- 错题列表（含答案对比）
+- 后端新增 `GET /api/user/sessions/{session_id}` 端点
+
+#### 2.2 关于页面（`pages/about`）
+- App 介绍信息
+
+### 三、技术细节
+
+- **ScrollView 高度链**：微信小程序中 `ScrollView` 是原生组件，正确参与 flex 高度级联；替换为 `View` 会导致高度塌缩。保留 `ScrollView` + `enhanced` + `showScrollbar={false}` 解决滚动条问题
+- **按钮顺序语义**：左侧"上一题"（回退），右侧"跳过"（前进），符合操作直觉
+- **全局 CSS 调优**：`app.scss` 同步微调，保证 Campus Comic 风格一致性
+
+### 四、测试覆盖
+
+后端 83 个测试全部通过（test_points.py 27 + test_auth.py 16 + test_user_api.py 30+ + test_analyze_with_user.py 10）。
+
+### 五、文件变更统计
+
+| 类别 | 新增 | 修改 | 合计 |
+|------|------|------|------|
+| 后端 | 0 | 6 | 6 |
+| 前端 | 2 | 15 | 17 |
+| **合计** | **2** | **21** | **23** |
+
+```
+后端修改:
+  backend/app/api/quiz.py               (+title 去硬编码)
+  backend/app/api/user.py               (+session detail 端点)
+  backend/app/models/api.py             (+title 字段)
+  backend/app/models/user_schemas.py    (+session detail schemas)
+  backend/tests/test_analyze_with_user.py (+title 测试)
+  backend/tests/test_user_api.py        (+session detail 测试)
+
+前端新增:
+  frontend/src/pages/about/index.tsx    (关于页面)
+  frontend/src/pages/sessiondetail/     (闯关记录详情)
+
+前端修改:
+  frontend/src/app.config.ts            (+2 页面路由)
+  frontend/src/app.scss                 (样式微调)
+  frontend/src/pages/index/index.tsx     (优化)
+  frontend/src/pages/index/index.scss    (优化)
+  frontend/src/pages/quiz/index.tsx      (title + 按钮位置)
+  frontend/src/pages/quiz/index.scss     (overflow + 高度限制)
+  frontend/src/pages/result/index.tsx    (灯灯气泡 + 奖励对齐)
+  frontend/src/pages/result/index.scss   (间距优化)
+  frontend/src/pages/mine/index.tsx      (ScrollView enhanced + 关于跳转)
+  frontend/src/pages/mine/index.scss     (滚动条 + 间距压缩)
+  frontend/src/pages/history/index.tsx   (卡片点击跳转)
+  frontend/src/pages/wrongbook/index.tsx (移除全部重做)
+  frontend/src/pages/wrongbook/index.scss (Tab 对齐 + 清理)
+  frontend/src/services/api.ts           (+session detail API)
+  frontend/src/types/quiz.ts            (+title 字段)
+  frontend/src/types/user.ts            (+session detail 类型)
+```
+
+---
+
+## v1.4.0 — 用户系统 P2：错题重做 + 全部重做
+
+**发布日期：** 2026-06-10  
+**提交：** `8fc0fbc`  
+**平台：** 微信小程序
+
+---
+
+### 一、重大新增
+
+#### 1.1 错题重做（Re-answer）
+
+- **新增 API**：`POST /api/user/wrong-questions/{id}/retry`
+  - 接收用户重新选择的答案，判断对错
+  - 答对 → 自动标记已掌握（resolved=true）+ 奖励 +2 金币
+  - 答错 → 保持待复习状态，提示"继续加油"
+- **WrongQuestion 表新增 `options` 字段**：存储 JSON 序列化的原始 A/B/C/D 选项
+  - ORM 模型新增 `options` TEXT 列
+  - `quiz.py` analyze 端点保存错题时附带原始选项
+  - `init.sql` 建表脚本同步更新
+  - `main.py` 启动时自动迁移：为已有表添加 options 列（幂等）
+- **Schema 更新**：`WrongQuestionItem` / `WrongQuestionDetailResponse` 新增 `options` 字段
+- **新增模型**：`RetryAnswerRequest` / `RetryAnswerResponse`
+
+#### 1.2 错题详情页重做交互
+
+- **重新作答区域**：展示原始 A/B/C/D 选项按钮（Campus Comic 风格）
+  - 点击选项 → 调用 retry API → 四种视觉状态：
+    - `selected`（蓝色高亮）→ 等待 API 响应
+    - `correct`（绿色 + ✓图标）→ 答对
+    - `wrong`（红色）→ 答错
+    - `hint-correct`（绿色边框提示）→ 答错后高亮正确答案
+  - 答对自动显示"已掌握"横幅 + toast 提示金币奖励
+  - 答错 toast 鼓励，灯灯 mascot 情绪切换
+- **向后兼容**：无 options 的旧错题仍可手动"标记为已掌握"
+
+#### 1.3 全部重做
+
+- **错题本页新增「全部重做」按钮**：将待复习错题拼接为新闯关
+  - 自动筛选有 options 的未掌握错题
+  - 构建 Question 对象 → initSession → 跳转答题页
+  - 智能判断题型：≤2 个选项 → `truefalse`，>2 → `choice`
+
+### 二、TDD 测试覆盖
+
+| 测试文件 | 新增用例 | 覆盖内容 |
+|----------|---------|----------|
+| `test_user_api.py` | +6 | retry 端点：auth/404/答对/答错/已掌握重答/options 保存 |
+| **合计** | **76** | **全部通过（+ 6 个 SSE 遗留失败，非本次变更）** |
+
+### 三、文件变更统计
+
+| 类别 | 新增 | 修改 | 合计 |
+|------|------|------|------|
+| 后端 | 0 | 7 | 7 |
+| 前端 | 0 | 6 | 6 |
+| 文档 | 0 | 2 | 2 |
+| **合计** | **0** | **15** | **15** |
+
+```
+修改:
+  backend/app/api/quiz.py               (保存 options +2 lines)
+  backend/app/api/user.py               (新增 retry 端点 +60 lines)
+  backend/app/main.py                   (启动迁移 +20 lines)
+  backend/app/models/user_orm.py        (options 列 +1 line)
+  backend/app/models/user_schemas.py    (retry 模型 +20 lines)
+  backend/tests/test_user_api.py        (retry 测试 +110 lines)
+  backend/init.sql                      (options 列 +1 line)
+  frontend/src/pages/wrongbook/index.tsx (全部重做按钮 +35 lines)
+  frontend/src/pages/wrongbook/index.scss (+8 lines)
+  frontend/src/pages/wrongdetail/index.tsx (重新作答 UI +120 lines)
+  frontend/src/pages/wrongdetail/index.scss (+80 lines)
+  frontend/src/services/api.ts          (retryWrongQuestion +35 lines)
+  frontend/src/types/user.ts            (options + RetryAnswerResponse)
+  VERSION.md                            (本文档)
+```
+
+---
+
 ## v1.3.0 — 用户系统 P1：个人中心 + 积分 + 错题本
 
 **发布日期：** 2026-06-10  
@@ -129,85 +295,6 @@
   frontend/src/pages/result/*          (+奖励/登录引导)
   frontend/src/services/api.ts         (+userApi)
   frontend/src/types/quiz.ts           (+RewardInfo)
-```
-
----
-
-## v1.4.0 — 用户系统 P2：错题重做 + 全部重做
-
-**发布日期：** 2026-06-10  
-**提交：** `8fc0fbc`  
-**平台：** 微信小程序
-
----
-
-### 一、重大新增
-
-#### 1.1 错题重做（Re-answer）
-
-- **新增 API**：`POST /api/user/wrong-questions/{id}/retry`
-  - 接收用户重新选择的答案，判断对错
-  - 答对 → 自动标记已掌握（resolved=true）+ 奖励 +2 金币
-  - 答错 → 保持待复习状态，提示"继续加油"
-- **WrongQuestion 表新增 `options` 字段**：存储 JSON 序列化的原始 A/B/C/D 选项
-  - ORM 模型新增 `options` TEXT 列
-  - `quiz.py` analyze 端点保存错题时附带原始选项
-  - `init.sql` 建表脚本同步更新
-  - `main.py` 启动时自动迁移：为已有表添加 options 列（幂等）
-- **Schema 更新**：`WrongQuestionItem` / `WrongQuestionDetailResponse` 新增 `options` 字段
-- **新增模型**：`RetryAnswerRequest` / `RetryAnswerResponse`
-
-#### 1.2 错题详情页重做交互
-
-- **重新作答区域**：展示原始 A/B/C/D 选项按钮（Campus Comic 风格）
-  - 点击选项 → 调用 retry API → 四种视觉状态：
-    - `selected`（蓝色高亮）→ 等待 API 响应
-    - `correct`（绿色 + ✓图标）→ 答对
-    - `wrong`（红色）→ 答错
-    - `hint-correct`（绿色边框提示）→ 答错后高亮正确答案
-  - 答对自动显示"已掌握"横幅 + toast 提示金币奖励
-  - 答错 toast 鼓励，灯灯 mascot 情绪切换
-- **向后兼容**：无 options 的旧错题仍可手动"标记为已掌握"
-
-#### 1.3 全部重做
-
-- **错题本页新增「全部重做」按钮**：将待复习错题拼接为新闯关
-  - 自动筛选有 options 的未掌握错题
-  - 构建 Question 对象 → initSession → 跳转答题页
-  - 智能判断题型：≤2 个选项 → `truefalse`，>2 → `choice`
-
-### 二、TDD 测试覆盖
-
-| 测试文件 | 新增用例 | 覆盖内容 |
-|----------|---------|----------|
-| `test_user_api.py` | +6 | retry 端点：auth/404/答对/答错/已掌握重答/options 保存 |
-| **合计** | **76** | **全部通过（+ 6 个 SSE 遗留失败，非本次变更）** |
-
-### 三、文件变更统计
-
-| 类别 | 新增 | 修改 | 合计 |
-|------|------|------|------|
-| 后端 | 0 | 7 | 7 |
-| 前端 | 0 | 6 | 6 |
-| 文档 | 0 | 2 | 2 |
-| **合计** | **0** | **15** | **15** |
-
-```
-修改:
-  backend/app/api/quiz.py               (保存 options +2 lines)
-  backend/app/api/user.py               (新增 retry 端点 +60 lines)
-  backend/app/main.py                   (启动迁移 +20 lines)
-  backend/app/models/user_orm.py        (options 列 +1 line)
-  backend/app/models/user_schemas.py    (retry 模型 +20 lines)
-  backend/tests/test_user_api.py        (retry 测试 +110 lines)
-  backend/init.sql                      (options 列 +1 line)
-  frontend/src/pages/wrongbook/index.tsx (全部重做按钮 +35 lines)
-  frontend/src/pages/wrongbook/index.scss (+8 lines)
-  frontend/src/pages/wrongdetail/index.tsx (重新作答 UI +120 lines)
-  frontend/src/pages/wrongdetail/index.scss (+80 lines)
-  frontend/src/services/api.ts          (retryWrongQuestion +35 lines)
-  frontend/src/types/user.ts            (options + RetryAnswerResponse)
-  VERSION.md                            (本文档)
 ```
 
 ---

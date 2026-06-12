@@ -48,7 +48,7 @@
   position: relative;
   width: 120px;
   height: 120px;
-  margin: 0 auto 12px;
+  margin: 0 auto 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,7 +92,7 @@
   display: flex;
   gap: 10px;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 24px;
 }
 
 .result-stat {
@@ -119,8 +119,16 @@
 
 /* ── Mascot ───────────────────────────────────────────── */
 .result-mascot {
-  margin: 10px 0;
-  text-align: center;
+  margin: 16px 0 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.result-mascot-bubble {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 10px 14px;
 }
 
 /* ── Action Buttons ──────────────────────────────────── */
@@ -411,6 +419,7 @@
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--black);
+  min-width: 120px;
 }
 
 .result-reward-exp-icon {
