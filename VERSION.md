@@ -1,5 +1,76 @@
 # 阿拉灯神丁 — 版本说明
 
+## v1.4.2 — 卡片标题显示原始输入 + 答题页滚动恢复 + 首页显示修复
+
+**发布日期：** 2026-06-12  
+**平台：** 微信小程序
+
+---
+
+### 一、Bug 修复（3 项手动测试问题）
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 首页"近期闯关"卡片标题均显示"闯关结果" | 后端 analyze 端点未保存用户原始输入；前端卡片仅回退到 `title` / `domain` | 后端全链路保存 `knowledge_input`（ORM → API → Schema）；前端卡片优先展示 `knowledge_input`，超 20 字自动截断 |
+| 2 | 答题页内容超出显示范围，无滚动条 | flex 布局中页面容器剪裁了溢出内容 | 将 `<View>` 替换为 `<ScrollView scrollY enhanced showScrollbar={false}>`，CSS `overflow-y: auto` |
+| 3 | 首页在微信开发者工具中白屏无法显示 | `truncateText` 函数中使用了 `…`（U+2026 HORIZONTAL ELLIPSIS），该 Unicode 字符在微信基础库 WXML 渲染层兼容性不佳 | 将 `"…"`（U+2026）替换为 `"..."`（三个 ASCII 句点） |
+
+### 二、技术细节
+
+#### 2.1 knowledge_input 全链路
+
+- **前端输入**：首页 `<Textarea>` → URL 参数 `?input=...` → loading 页 `knowledgeInputRef.current`
+- **前端传递**：`initSession(quizId, title, domain, knowledgeInput, questions)` → quizStore session
+- **分析请求**：`QuizAnalyzeRequest.knowledge_input` → `POST /api/quiz/analyze`
+- **后端存储**：`QuizSessionRecord.knowledge_input`（TEXT 列，可为 NULL）
+- **自动迁移**：`main.py` 启动时检测 `information_schema.COLUMNS`，缺列则 ALTER TABLE（幂等）
+- **历史返回**：`GET /api/user/history` + `GET /api/user/sessions/{id}` 均返回 `knowledge_input`
+- **前端展示**：`getCardTitle(item)` → `item.knowledge_input` 存在则截断展示，否则回退 `title || domain || "闯关记录"`
+
+#### 2.2 首页白屏根因
+
+微信小程序 WXML 模板渲染层对 U+2026（`…`）字符兼容性不佳。虽然该字符在 JavaScript 引擎中正常（已编译为 `…`），但通过 `setData` 传递到 WXML 后，部分微信基础库版本会导致渲染异常。替换为 ASCII `...` 后问题消失。
+
+### 三、测试覆盖
+
+后端 85 个测试全部通过（test_points.py 27 + test_auth.py 16 + test_user_api.py 30+ + test_analyze_with_user.py 12）。
+
+新增 2 个测试用例：
+- `test_knowledge_input_stored_in_session`：验证 knowledge_input 从 analyze 请求 → session 记录 → history API → session detail API 的完整链路
+- `test_knowledge_input_null_when_not_provided`：验证未提供 knowledge_input 时返回 null
+
+### 四、文件变更统计
+
+| 类别 | 新增 | 修改 | 合计 |
+|------|------|------|------|
+| 后端 | 0 | 7 | 7 |
+| 前端 | 0 | 8 | 8 |
+| **合计** | **0** | **15** | **15** |
+
+```
+后端修改:
+  backend/app/api/quiz.py                 (+1 line: 保存 knowledge_input)
+  backend/app/api/user.py                 (+2 lines: 返回 knowledge_input)
+  backend/app/main.py                     (+28 lines: _migrate_knowledge_input 自动迁移)
+  backend/app/models/api.py               (+4 lines: QuizAnalyzeRequest.knowledge_input)
+  backend/app/models/user_orm.py          (+3 lines: QuizSessionRecord.knowledge_input 列)
+  backend/app/models/user_schemas.py      (+2 lines: HistoryItem/SessionDetailResponse 字段)
+  backend/init.sql                        (+1 line: knowledge_input 列定义)
+  backend/tests/test_analyze_with_user.py (+53 lines: 2 个测试用例)
+
+前端修改:
+  frontend/src/pages/index/index.tsx      (+10 lines: truncateText/getCardTitle 函数 + 卡片标题逻辑)
+  frontend/src/pages/history/index.tsx    (+10 lines: 同首页)
+  frontend/src/pages/loading/index.tsx    (+2 lines: 传递 knowledgeInput 给 initSession)
+  frontend/src/pages/quiz/index.tsx       (+5 lines: ScrollView + knowledge_input 传递)
+  frontend/src/pages/quiz/index.scss      (+1 line: overflow-y: auto)
+  frontend/src/stores/quizStore.ts        (+4 lines: knowledge_input 字段 + initSession 签名)
+  frontend/src/types/quiz.ts              (+2 lines: QuizSession/QuizAnalyzeRequest 字段)
+  frontend/src/types/user.ts              (+2 lines: HistoryItem/SessionDetail 字段)
+```
+
+---
+
 ## v1.4.1 — 手动测试 13 项问题修复 + 闯关记录详情页
 
 **发布日期：** 2026-06-12  

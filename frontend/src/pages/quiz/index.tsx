@@ -11,7 +11,7 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { View, Text } from "@tarojs/components";
+import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useQuizStore } from "../../stores/quizStore";
@@ -111,6 +111,7 @@ export default function QuizPage() {
         const analyzeReq: QuizAnalyzeRequest = {
           quiz_id: session.quiz_id,
           title: session.title,
+          knowledge_input: session.knowledge_input,
           knowledge_domain: session.knowledge_domain,
           questions: questions.map((q) => ({
             id: q.id,
@@ -190,7 +191,7 @@ export default function QuizPage() {
         </View>
       )}
 
-      <View className="app-phone-content quiz-page">
+      <ScrollView className="app-phone-content quiz-page" scrollY enhanced showScrollbar={false}>
         <View className="status-bar-spacer" />
 
         {/* === Top Bar === */}
@@ -373,7 +374,7 @@ export default function QuizPage() {
             </View>
           </View>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }

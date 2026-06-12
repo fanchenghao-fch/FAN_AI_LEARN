@@ -287,3 +287,56 @@ class TestAnalyzeWithUser:
         assert hist_resp.status_code == 200
         items = hist_resp.json()["data"]["items"]
         assert items[0]["domain"] == "综合"
+
+    def test_knowledge_input_stored_in_session(self, client):
+        """knowledge_input from analyze request → stored in session record."""
+        token, user_id = _login(client, "输入存储测试")
+
+        payload = _analyze_payload("quiz_input_001")
+        payload["knowledge_input"] = "Python面试高频题：装饰器、生成器、上下文管理器"
+
+        resp = client.post(
+            "/api/quiz/analyze",
+            json=payload,
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+
+        # Verify knowledge_input appears in history
+        hist_resp = client.get(
+            "/api/user/history",
+            headers=_auth_header(token),
+        )
+        assert hist_resp.status_code == 200
+        items = hist_resp.json()["data"]["items"]
+        assert len(items) == 1
+        assert items[0]["knowledge_input"] == "Python面试高频题：装饰器、生成器、上下文管理器"
+
+        # Verify knowledge_input appears in session detail
+        detail_resp = client.get(
+            f"/api/user/sessions/{items[0]['session_id']}",
+            headers=_auth_header(token),
+        )
+        assert detail_resp.status_code == 200
+        assert detail_resp.json()["data"]["knowledge_input"] == "Python面试高频题：装饰器、生成器、上下文管理器"
+
+    def test_knowledge_input_null_when_not_provided(self, client):
+        """When knowledge_input is not provided, it should be None."""
+        token, user_id = _login(client, "无输入测试")
+
+        payload = _analyze_payload("quiz_noinput_001")
+        # Do NOT set knowledge_input
+
+        resp = client.post(
+            "/api/quiz/analyze",
+            json=payload,
+            headers=_auth_header(token),
+        )
+        assert resp.status_code == 200
+
+        hist_resp = client.get(
+            "/api/user/history",
+            headers=_auth_header(token),
+        )
+        items = hist_resp.json()["data"]["items"]
+        assert items[0]["knowledge_input"] is None

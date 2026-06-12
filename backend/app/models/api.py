@@ -47,6 +47,10 @@ class QuizAnalyzeRequest(BaseModel):
         default=None,
         description="Quiz title from generation (e.g. 'Python基础闯关')",
     )
+    knowledge_input: str | None = Field(
+        default=None,
+        description="Original knowledge input text (e.g. 'Python面试高频题')",
+    )
     knowledge_domain: str | None = Field(
         default=None,
         description="Knowledge domain from quiz generation (e.g. 'Python编程基础')",

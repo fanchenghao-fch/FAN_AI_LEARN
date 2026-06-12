@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         await _migrate_wrong_questions_options(conn)
+        await _migrate_knowledge_input(conn)
         await _seed_level_configs(conn)
 
     yield
@@ -54,6 +55,33 @@ async def _migrate_wrong_questions_options(conn):
             )
     except Exception:
         # Table may not exist yet (first run) — safe to ignore
+        pass
+
+
+async def _migrate_knowledge_input(conn):
+    """Add knowledge_input column to quiz_sessions if it doesn't exist."""
+    from sqlalchemy import text as _t
+
+    try:
+        result = await conn.execute(
+            _t(
+                """
+                SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'quiz_sessions'
+                  AND COLUMN_NAME = 'knowledge_input'
+                """
+            )
+        )
+        if result.scalar() == 0:
+            await conn.execute(
+                _t(
+                    "ALTER TABLE quiz_sessions "
+                    "ADD COLUMN knowledge_input TEXT DEFAULT NULL "
+                    "COMMENT '原始知识输入文本'"
+                )
+            )
+    except Exception:
         pass
 
 

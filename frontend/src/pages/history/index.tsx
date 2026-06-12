@@ -40,6 +40,16 @@ function getAccuracyColor(acc: number): string {
   return "var(--red)";
 }
 
+function truncateText(text: string, maxLen = 20): string {
+  if (!text) return "";
+  return text.length > maxLen ? text.slice(0, maxLen) + "..." : text;
+}
+
+function getCardTitle(item: HistoryItem): string {
+  if (item.knowledge_input) return truncateText(item.knowledge_input);
+  return item.title || item.domain || "闯关记录";
+}
+
 // ── Page Component ──────────────────────────────────────────
 
 export default function HistoryPage() {
@@ -206,7 +216,7 @@ export default function HistoryPage() {
               onClick={() => Taro.navigateTo({ url: `/pages/sessiondetail/index?sessionId=${item.session_id}` })}
             >
               <View className="history-item-top">
-                <Text className="history-item-title">{item.title}</Text>
+                <Text className="history-item-title">{getCardTitle(item)}</Text>
                 <Text className="history-item-domain">{item.domain}</Text>
               </View>
 

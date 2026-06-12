@@ -49,6 +49,7 @@ export interface QuizSession {
   quiz_id: string;
   title: string;
   knowledge_domain: string;
+  knowledge_input: string;
   questions: Question[];
   current_index: number;
   answers: UserAnswer[];
@@ -116,6 +117,7 @@ export interface QuizGenerateRequest {
 export interface QuizAnalyzeRequest {
   quiz_id: string;
   title?: string;
+  knowledge_input?: string;
   knowledge_domain?: string;
   questions: Record<string, unknown>[];
   answers: Record<string, unknown>[];

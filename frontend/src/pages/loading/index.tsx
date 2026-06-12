@@ -34,6 +34,7 @@ export default function LoadingPage() {
 
   const [tipsRotation, setTipsRotation] = useState(0);
   const controllerRef = useRef<AbortController | null>(null);
+  const knowledgeInputRef = useRef<string>("");
 
   const initSession = useQuizStore((s) => s.initSession);
   const setGenerating = useUIStore((s) => s.setGenerating);
@@ -56,6 +57,7 @@ export default function LoadingPage() {
   useLoad((options) => {
     const input = decodeURIComponent(options?.input || "");
     if (input) {
+      knowledgeInputRef.current = input;
       startGeneration(input);
     } else {
       Taro.showToast({ title: "未收到知识输入", icon: "none" });
@@ -113,6 +115,7 @@ export default function LoadingPage() {
           result.quiz_id,
           result.title,
           result.knowledge_domain,
+          knowledgeInputRef.current,
           result.questions,
         );
 

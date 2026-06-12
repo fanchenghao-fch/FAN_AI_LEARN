@@ -9,7 +9,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
-  overflow: hidden;       /* prevent page-level scroll */
+  overflow-y: auto;       /* allow vertical scroll so all content is visible */
 }
 
 /* ── Top Bar ─────────────────────────────────────────── */

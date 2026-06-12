@@ -73,6 +73,7 @@ class HistoryItem(BaseModel):
     session_id: str
     quiz_id: str
     title: str
+    knowledge_input: str | None = None
     domain: str
     score: int
     total: int
@@ -176,6 +177,7 @@ class SessionDetailResponse(BaseModel):
     session_id: str
     quiz_id: str
     title: str
+    knowledge_input: str | None = None
     domain: str
     score: int
     total: int

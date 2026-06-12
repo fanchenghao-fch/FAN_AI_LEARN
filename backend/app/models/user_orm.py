@@ -95,6 +95,9 @@ class QuizSessionRecord(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     quiz_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    knowledge_input: Mapped[str | None] = mapped_column(
+        Text, nullable=True, comment="原始知识输入文本"
+    )
     domain: Mapped[str] = mapped_column(String(128), nullable=False, default="")
     title: Mapped[str] = mapped_column(String(128), nullable=False, default="")
     score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

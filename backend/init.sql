@@ -57,11 +57,12 @@ CREATE TABLE `users` (
 -- ============================================================
 
 CREATE TABLE `quiz_sessions` (
-    `id`           CHAR(36)      NOT NULL PRIMARY KEY COMMENT 'UUID',
-    `user_id`      CHAR(36)      NOT NULL                 COMMENT 'FK → users.id',
-    `quiz_id`      VARCHAR(64)   NOT NULL                 COMMENT 'quiz_xxxxxxxxxxxx',
-    `domain`       VARCHAR(128)  NOT NULL DEFAULT ''      COMMENT '知识领域',
-    `title`        VARCHAR(128)  NOT NULL DEFAULT ''      COMMENT '闯关标题',
+    `id`               CHAR(36)      NOT NULL PRIMARY KEY COMMENT 'UUID',
+    `user_id`          CHAR(36)      NOT NULL                 COMMENT 'FK → users.id',
+    `quiz_id`          VARCHAR(64)   NOT NULL                 COMMENT 'quiz_xxxxxxxxxxxx',
+    `knowledge_input`  TEXT          DEFAULT NULL             COMMENT '原始知识输入文本',
+    `domain`           VARCHAR(128)  NOT NULL DEFAULT ''      COMMENT '知识领域',
+    `title`            VARCHAR(128)  NOT NULL DEFAULT ''      COMMENT '闯关标题',
     `score`        INT           NOT NULL DEFAULT 0       COMMENT '得分',
     `total`        INT           NOT NULL DEFAULT 0       COMMENT '总题数',
     `accuracy`     FLOAT         NOT NULL DEFAULT 0.0     COMMENT '正确率 (0-1)',

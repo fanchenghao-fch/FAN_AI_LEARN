@@ -45,6 +45,16 @@ export default function IndexPage() {
     }
   };
 
+  const truncateText = (text: string, maxLen = 20): string => {
+    if (!text) return "";
+    return text.length > maxLen ? text.slice(0, maxLen) + "..." : text;
+  };
+
+  const getCardTitle = (item: HistoryItem): string => {
+    if (item.knowledge_input) return truncateText(item.knowledge_input);
+    return item.title || item.domain || "闯关记录";
+  };
+
   const getDomainEmoji = (domain: string) => {
     const map: Record<string, string> = {
       "Python": "🐍", "编程": "💻", "数学": "📐", "物理": "⚡",
@@ -155,7 +165,7 @@ export default function IndexPage() {
                       <Text style={{ fontSize: "0.85rem" }}>{getDomainEmoji(s.domain)}</Text>
                     </View>
                     <View className="quiz-info">
-                      <Text className="quiz-title">{s.title || s.domain || "闯关记录"}</Text>
+                      <Text className="quiz-title">{getCardTitle(s)}</Text>
                       <Text className="quiz-meta">
                         {s.score}/{s.total} 正确 · {Math.round(s.accuracy * 100)}% · {formatDate(s.created_at)}
                       </Text>

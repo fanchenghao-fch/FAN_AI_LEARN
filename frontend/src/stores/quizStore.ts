@@ -39,7 +39,7 @@ interface QuizState {
 
 interface QuizActions {
   // Session management
-  initSession: (quizId: string, title: string, domain: string, questions: Question[]) => void;
+  initSession: (quizId: string, title: string, domain: string, knowledgeInput: string, questions: Question[]) => void;
   resetSession: () => void;
 
   // Answer handling
@@ -72,6 +72,7 @@ const initialSession: QuizSession = {
   quiz_id: "",
   title: "",
   knowledge_domain: "",
+  knowledge_input: "",
   questions: [],
   current_index: 0,
   answers: [],
@@ -95,12 +96,13 @@ export const useQuizStore = create<QuizState & QuizActions>((set, get) => ({
 
   // ── Session ─────────────────────────────────────────
 
-  initSession: (quizId, title, domain, questions) => {
+  initSession: (quizId, title, domain, knowledgeInput, questions) => {
     set({
       session: {
         quiz_id: quizId,
         title,
         knowledge_domain: domain,
+        knowledge_input: knowledgeInput,
         questions,
         current_index: 0,
         answers: [],

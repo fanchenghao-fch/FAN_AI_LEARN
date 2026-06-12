@@ -207,6 +207,7 @@ async def analyze_quiz(
             session_record = QuizSessionRecord(
                 user_id=user.id,
                 quiz_id=request.quiz_id,
+                knowledge_input=request.knowledge_input,
                 domain=knowledge_domain,
                 title=request.title or knowledge_domain or "闯关记录",
                 score=correct_count,

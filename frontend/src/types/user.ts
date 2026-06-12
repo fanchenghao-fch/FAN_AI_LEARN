@@ -54,6 +54,7 @@ export interface HistoryItem {
   session_id: string;
   quiz_id: string;
   title: string;
+  knowledge_input?: string | null;
   domain: string;
   score: number;
   total: number;
@@ -115,6 +116,7 @@ export interface SessionDetail {
   session_id: string;
   quiz_id: string;
   title: string;
+  knowledge_input?: string | null;
   domain: string;
   score: number;
   total: number;
