@@ -65,6 +65,11 @@ class Settings:
     VALIDATION_TEMPERATURE: float = 0.1
     ANALYSIS_TEMPERATURE: float = 0.5
 
+    # ── Tavily Search ─────────────────────────────────────────
+    TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
+    SEARCH_TIMEOUT_SECONDS: int = 8
+    SEARCH_MAX_CHARS: int = 3000
+
     # ── Tokens ────────────────────────────────────────────────
     GENERATION_MAX_TOKENS: int = 4096
     VALIDATION_MAX_TOKENS: int = 2048

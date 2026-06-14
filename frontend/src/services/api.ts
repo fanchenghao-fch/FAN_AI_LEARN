@@ -20,7 +20,35 @@ import type {
 } from "../types/user";
 import Taro from "@tarojs/taro";
 
-const API_BASE = "http://localhost:8000";
+// ── API Base URL (configurable at runtime) ────────────────────
+// Priority: Taro Storage "aladeng_api_base" → default localhost.
+// Useful for switching between dev (localhost), LAN (192.168.x.x),
+// and production without recompiling.
+const STORAGE_KEY_API_BASE = "aladeng_api_base";
+
+function getApiBase(): string {
+  try {
+    const saved = Taro.getStorageSync(STORAGE_KEY_API_BASE);
+    if (saved && typeof saved === "string" && saved.length > 0) return saved;
+  } catch {
+    // Taro APIs may not be available in all environments
+  }
+  return "http://localhost:8000";
+}
+
+/** Override the API base URL at runtime (persisted to storage). */
+export function setApiBase(url: string): void {
+  try {
+    Taro.setStorageSync(STORAGE_KEY_API_BASE, url);
+  } catch {
+    // Ignore errors in environments without Taro APIs
+  }
+}
+
+/** Get the current effective API base URL. */
+export function getCurrentApiBase(): string {
+  return getApiBase();
+}
 
 // ═══════════════════════════════════════════════════════════
 // Token Management
@@ -66,7 +94,7 @@ export const authApi = {
   async wechatLogin(code: string): Promise<UserAPIResponse<LoginResponse>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/auth/wechat-login`,
+        url: `${getApiBase()}/api/auth/wechat-login`,
         method: "POST",
         header: { "Content-Type": "application/json" },
         data: { code },
@@ -91,7 +119,7 @@ export const authApi = {
   async getProfile(): Promise<UserAPIResponse<UserProfileResponse>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/auth/me`,
+        url: `${getApiBase()}/api/auth/me`,
         method: "GET",
         header: {
           "Content-Type": "application/json",
@@ -129,7 +157,7 @@ export const userApi = {
   async getStats(): Promise<UserAPIResponse<import("../types/user").UserStats>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/stats`,
+        url: `${getApiBase()}/api/user/stats`,
         method: "GET",
         header: {
           "Content-Type": "application/json",
@@ -164,7 +192,7 @@ export const userApi = {
   ): Promise<UserAPIResponse<import("../types/user").HistoryPage>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/history`,
+        url: `${getApiBase()}/api/user/history`,
         method: "GET",
         header: {
           "Content-Type": "application/json",
@@ -204,7 +232,7 @@ export const userApi = {
       }
 
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/wrong-questions`,
+        url: `${getApiBase()}/api/user/wrong-questions`,
         method: "GET",
         header: {
           "Content-Type": "application/json",
@@ -239,7 +267,7 @@ export const userApi = {
   ): Promise<UserAPIResponse<Record<string, unknown>>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/wrong-questions/${id}`,
+        url: `${getApiBase()}/api/user/wrong-questions/${id}`,
         method: "GET",
         header: {
           "Content-Type": "application/json",
@@ -277,7 +305,7 @@ export const userApi = {
   ): Promise<UserAPIResponse<{ resolved: boolean; resolved_at?: string }>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/wrong-questions/${id}/resolve`,
+        url: `${getApiBase()}/api/user/wrong-questions/${id}/resolve`,
         method: "POST",
         header: {
           "Content-Type": "application/json",
@@ -313,7 +341,7 @@ export const userApi = {
   ): Promise<UserAPIResponse<import("../types/user").RetryAnswerResponse>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/wrong-questions/${id}/retry`,
+        url: `${getApiBase()}/api/user/wrong-questions/${id}/retry`,
         method: "POST",
         header: {
           "Content-Type": "application/json",
@@ -348,7 +376,7 @@ export const userApi = {
   ): Promise<UserAPIResponse<import("../types/user").SessionDetail>> {
     try {
       const res = await Taro.request({
-        url: `${API_BASE}/api/user/sessions/${sessionId}`,
+        url: `${getApiBase()}/api/user/sessions/${sessionId}`,
         method: "GET",
         header: {
           "Content-Type": "application/json",
@@ -544,10 +572,31 @@ function generateQuizStreamMini(
 
   // Synthetic progress events to drive the loading page UI steps
   console.log("[Quiz] starting sync generate request");
-  callbacks.onProgress?.({ stage: "generating", message: "正在分析知识点..." });
+
+  // Phase 1: Searching (if enabled)
+  if (request.enable_search !== false) {
+    callbacks.onProgress?.({
+      stage: "searching",
+      message: "正在搜索最新知识...",
+      status: "active",
+    });
+  } else {
+    callbacks.onProgress?.({
+      stage: "searching",
+      message: "已跳过搜索",
+      status: "done",
+    });
+  }
+
+  // Phase 2: Generating
+  callbacks.onProgress?.({
+    stage: "generating",
+    message: "正在分析知识点...",
+    status: "active",
+  });
 
   const requestTask = wx.request({
-    url: `${API_BASE}/api/quiz/generate-sync`,
+    url: `${getApiBase()}/api/quiz/generate-sync`,
     method: "POST",
     header: {
       "Content-Type": "application/json",
@@ -588,11 +637,66 @@ function generateQuizStreamMini(
         return;
       }
 
-      // Signal validating progress, then deliver result
-      callbacks.onProgress?.({ stage: "validating", message: "正在校验题目准确性..." });
+      // ── Staggered progress prompts (see generateQuizStreamMini JSDoc) ──
+      const _searchMethod = payload.data?.search_method;
+      const _searchStatus = payload.data?.search_status;
+      const _resultData = payload.data;
 
-      console.log("[Quiz] quiz generated:", payload.data.quiz_id);
-      callbacks.onResult?.(payload.data);
+      // Phase 1 → done (after 600 ms)
+      setTimeout(() => {
+        if (controller.signal.aborted) return;
+
+        if (_searchStatus === "success" && _searchMethod !== "none") {
+          callbacks.onProgress?.({
+            stage: "searching",
+            message: "知识搜索完成",
+            status: "done",
+          });
+        } else if (_searchStatus === "disabled") {
+          callbacks.onProgress?.({
+            stage: "searching",
+            message: "已跳过搜索",
+            status: "done",
+          });
+        }
+
+        // Phase 2 → done (after another 700 ms)
+        setTimeout(() => {
+          if (controller.signal.aborted) return;
+
+          callbacks.onProgress?.({
+            stage: "generating",
+            message: "题目生成完成",
+            status: "done",
+          });
+
+          // Phase 3 → active
+          callbacks.onProgress?.({
+            stage: "validating",
+            message: "正在校验答案准确性...",
+            status: "active",
+          });
+
+          // Phase 3 → done → deliver result (after another 500 ms)
+          setTimeout(() => {
+            if (controller.signal.aborted) return;
+
+            callbacks.onProgress?.({
+              stage: "validating",
+              message: "校验完成",
+              status: "done",
+            });
+
+            console.log("[Quiz] quiz generated:", _resultData.quiz_id);
+
+            setTimeout(() => {
+              if (!controller.signal.aborted) {
+                callbacks.onResult?.(_resultData);
+              }
+            }, 300);
+          }, 500);
+        }, 700);
+      }, 600);
     },
 
     fail: (err) => {
@@ -633,7 +737,7 @@ export async function analyzeQuiz(
   request: QuizAnalyzeRequest,
 ): Promise<APIResponse<QuizResult>> {
   const res = await Taro.request({
-    url: `${API_BASE}/api/quiz/analyze`,
+    url: `${getApiBase()}/api/quiz/analyze`,
     method: "POST",
     header: {
       "Content-Type": "application/json",

@@ -62,6 +62,7 @@ def build_generation_input(
     question_count: int = 10,
     question_types: list[str] | None = None,
     difficulty: str = "auto",
+    enriched_knowledge: str | None = None,
 ) -> dict:
     """Build the input dict for the quiz generation chain.
 
@@ -70,6 +71,7 @@ def build_generation_input(
         question_count: Number of questions (5-50).
         question_types: List of question types (default: ["选择题"]).
         difficulty: Target difficulty (easy|medium|hard|auto).
+        enriched_knowledge: Optional search-enriched context prepended to input.
 
     Returns:
         Dict ready for chain invocation.
@@ -79,8 +81,19 @@ def build_generation_input(
 
     parser = JsonOutputParser(pydantic_object=QuizOutput)
 
+    # Prepend enriched knowledge when available
+    if enriched_knowledge:
+        combined_input = (
+            f"## 搜索补充资料（仅供参考，以用户原始知识输入为准）\n"
+            f"{enriched_knowledge}\n\n"
+            f"## 用户原始知识输入\n"
+            f"{knowledge_input}"
+        )
+    else:
+        combined_input = knowledge_input
+
     return {
-        "knowledge_input": knowledge_input,
+        "knowledge_input": combined_input,
         "question_count": question_count,
         "question_types": "、".join(question_types),
         "difficulty": difficulty,

@@ -26,6 +26,8 @@ from app.chains.result_analysis import (
     create_analysis_chain,
     build_analysis_input,
 )
+from app.chains.knowledge_search import enrich_knowledge
+from app.chains.domain_validation import validate_domain
 from app.services.auth import get_optional_user
 from app.services.points import (
     calculate_coins,
@@ -39,36 +41,69 @@ router = APIRouter(prefix="/api/quiz", tags=["quiz"])
 
 @router.post("/generate-sync")
 async def generate_quiz_sync(request: QuizGenerateRequest):
-    """Generate quiz questions — synchronous JSON response.
+    """Generate quiz questions — 3-phase synchronous pipeline.
+
+    Phases:
+      1. Knowledge Search  — enrich user input via web search (graceful degrade)
+      2. Question Generation — DeepSeek Pro creates quiz from enriched knowledge
+      3. Validation         — answer validation + domain validation
 
     Used by WeChat Mini Program (which cannot consume SSE streams via
-    wx.request).  Runs the same generation + validation chains as the
-    SSE endpoint but returns a single JSON payload.
+    wx.request).
 
     Returns:
         JSON object with quiz_id, title, knowledge_domain, questions,
-        and validation.  On error returns APIResponse with code=500.
+        validation (answer), domain_validation, search_status, search_method.
+        On error returns APIResponse with code=500.
     """
     try:
-        # Stage 1: Generate questions (non-streaming)
+        # ── Phase 1: Knowledge Search ──────────────────────────
+        enriched_knowledge = None
+        search_status = "disabled"
+        search_method = None
+
+        if request.enable_search:
+            search_status = "success"
+            enriched_knowledge, search_method = await enrich_knowledge(
+                knowledge_input=request.knowledge_input,
+            )
+
+            if enriched_knowledge is None:
+                if search_method in ("tavily_timeout",):
+                    search_status = "timeout"
+                elif search_method == "none":
+                    search_status = "error"
+                else:
+                    search_status = "success"  # search completed but no results
+
+        # ── Phase 2: Question Generation ────────────────────────
         gen_chain = create_quiz_generation_chain(streaming=False)
         gen_input = build_generation_input(
             knowledge_input=request.knowledge_input,
             question_count=request.question_count,
             question_types=request.question_types,
             difficulty=request.difficulty,
+            enriched_knowledge=enriched_knowledge,
         )
 
         full_output = await gen_chain.ainvoke(gen_input)
         quiz_output = QuizOutput(**full_output)
 
-        # Stage 2: Validate questions
         questions_dict = [q.model_dump() for q in quiz_output.questions]
+
+        # ── Phase 3a: Answer Validation (existing) ─────────────
         val_chain = create_validation_chain()
         val_input = build_validation_input(questions_dict)
         validation_result = await val_chain.ainvoke(val_input)
 
-        # Stage 3: Return result
+        # ── Phase 3b: Domain Validation (new) ──────────────────
+        domain_validation = await validate_domain(
+            knowledge_domain=quiz_output.knowledge_domain,
+            knowledge_input=request.knowledge_input,
+            questions=questions_dict,
+        )
+
+        # ── Build Response ──────────────────────────────────────
         quiz_id = f"quiz_{uuid.uuid4().hex[:12]}"
 
         return APIResponse(
@@ -78,8 +113,13 @@ async def generate_quiz_sync(request: QuizGenerateRequest):
                 "quiz_id": quiz_id,
                 "title": quiz_output.title,
                 "knowledge_domain": quiz_output.knowledge_domain,
-                "questions": [q.model_dump() for q in quiz_output.questions],
+                "questions": questions_dict,
                 "validation": validation_result,
+                "domain_validation": domain_validation.model_dump()
+                if domain_validation
+                else {"valid": True, "issues": []},
+                "search_status": search_status,
+                "search_method": search_method,
             },
         )
 

@@ -1,8 +1,26 @@
 """API Request/Response models — separate from core domain models."""
 
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic import BaseModel, Field
+
+
+# ── Progress / Response type aliases ──────────────────────────
+
+# Stage values for quiz generation progress events
+ProgressStage = Literal["searching", "generating", "validating"]
+
+# Search method identifiers (which backend performed the search)
+SearchMethod = Literal[
+    "tavily_search",
+    "tavily_extract",
+    "deepseek_native",
+    "firecrawl",
+    "none",
+]
+
+# Search status emitted in API response
+SearchStatus = Literal["success", "timeout", "disabled", "error"]
 
 
 class QuizGenerateRequest(BaseModel):
@@ -34,7 +52,7 @@ class QuizGenerateRequest(BaseModel):
         description="Question types to include",
     )
     enable_search: bool = Field(
-        default=False,
+        default=True,
         description="Whether to enable web search for knowledge enrichment",
     )
 

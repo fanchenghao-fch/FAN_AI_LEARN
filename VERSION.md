@@ -1,5 +1,88 @@
 # 阿拉灯神丁 — 版本说明
 
+## v1.4.3 — 卡片居中修复 + Loading 进度感知 + WXSS 布局重构
+
+**发布日期：** 2026-06-14  
+**平台：** 微信小程序
+
+---
+
+### 一、Bug 修复（4 项手动测试问题）
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 出题 Loading 页面进度未实时对齐 | 搜索/生成两阶段在请求开始时立即同时激活，剩余 60-120s 无任何进度更新 | 搜索阶段 6s 后自动推进至生成阶段；生成阶段每 4s 轮换提示消息 |
+| 2 | 闯关答题页卡片未居中（偏左）且显示不完整 | `.quiz-page` 的 `padding-right: 4px` 覆盖了 `.app-phone-content` 的 `padding-right: 22px`；同时 `.question-card` 等卡片的 `margin-right: 4px` + `width: 100%` 导致右侧溢出 | 移除 `.quiz-page` 的 `padding-right` 覆盖；移除 3 张卡片（question/explanantion/complete-banner）的 `margin-right` |
+| 3 | 答题总结页卡片未居中（偏左）且显示不完整 | 同上根因：`.result-page` 的 `padding-right: 4px` 覆盖 + 4 处 `margin-right` 溢出 | 移除 `.result-page` 的 `padding-right` 覆盖；移除 `.knowledge-point`/`.wrong-review-item`/`.study-suggestion-card` 的 `margin-right`；移除 2 处按钮 inline `marginRight` |
+| 4 | 个人中心/学习历史/错题本/关于页面卡片显示不完整 | 同根因：页面类 `padding-right: 4px` 覆盖 `.app-phone-content` 的 `padding-right: 22px`；`.comic-card`/`.speech-bubble` 的 `margin-right` + flex stretch 导致溢出 | 全局移除 4 个页面类的 `padding-right` 覆盖；移除 `.comic-card` 和 `.speech-bubble` 的 `margin-right`；移除 `.mine-login-btn`/`.mine-logout-btn`/`.mine-stat-item` 的 `margin-right` |
+
+### 二、Loading 页面增强
+
+#### 2.1 进度阶段自动推进
+- 搜索阶段 6 秒后自动标记完成并进入生成阶段（避免漫长等待期间 UI 卡在"搜索"）
+- 生成阶段消息轮换：每 4 秒切换提示文字（"正在分析知识点结构..." → "正在设计题目难度梯度..." → "正在构思有趣的题目..." → "灯灯正在奋笔疾书中..."）
+
+#### 2.2 排版优化
+- `.loading-step` 左侧 padding 从 0 增至 12px，圆形图标不再紧贴左侧彩色边框
+
+### 三、WXSS 布局架构修正
+
+#### 3.1 核心问题：CSS 类名冲突
+所有页面统一样式模式：`.app-phone-content`（全局 padding: 22px）+ 页面专属类共存在同一个 `<ScrollView>` 元素上。页面类的 `padding-right: 4px` 因 CSS 层叠覆盖了全局 22px，导致右侧有效空间从 22px 骤降至 4px。
+
+#### 3.2 二次问题：margin-right + flex stretch 溢出
+Flex 列容器中，子元素默认 `align-items: stretch` 填满宽度。添加 `margin-right: Npx` 后，元素总宽度 = 容器宽度 + Npx → 溢出裁剪。
+
+#### 3.3 修正方案
+- 全局阴影空间由 `.app-phone-content` 的 `padding: 32px 22px 20px` 统一提供（比原始 18px 多 4px）
+- 页面类不再覆盖 padding；卡片/按钮不再添加 margin-right
+- 确认编译产物中无 `calc()` 和 `overflow-x: visible`（WXSS 不兼容）
+
+### 四、向后兼容性保障
+
+- **API 基础地址可配置**：`api.ts` 新增 `setApiBase()` / `getCurrentApiBase()`，前端启动时检测后端连通性
+- **后端启动脚本**：`backend/start.sh` 自动检测 poetry/pip 环境，兼容两种安装方式
+- **出题防幻觉约束**：提示词增加"禁止引用外部材料"和"无幻觉材料"规则
+
+### 五、文件变更统计
+
+| 类别 | 新增 | 修改 | 合计 |
+|------|------|------|------|
+| 后端 | 4 | 6 | 10 |
+| 前端 | 0 | 9 | 9 |
+| **合计** | **4** | **15** | **19** |
+
+```
+后端新增:
+  backend/app/chains/domain_validation.py     (领域校验链)
+  backend/app/chains/knowledge_search.py      (知识搜索链)
+  backend/app/prompts/domain_validation.py    (领域校验提示词)
+  backend/app/prompts/knowledge_search.py     (知识搜索提示词)
+  backend/poetry.lock                         (依赖锁定)
+  backend/start.sh                            (启动脚本)
+
+后端修改:
+  backend/app/api/quiz.py                     (同步端点 + search 信息)
+  backend/app/chains/quiz_generation.py       (防幻觉约束)
+  backend/app/config.py                       (配置扩展)
+  backend/app/models/api.py                   (模型字段扩展)
+  backend/app/prompts/quiz_generation.py      (提示词硬约束)
+  backend/pyproject.toml                      (依赖更新)
+
+前端修改:
+  frontend/src/app.scss                       (padding 18→22px; 移除 .comic-card/.speech-bubble margin-right)
+  frontend/src/app.tsx                        (启动时后端连通性检测)
+  frontend/src/pages/index/index.tsx           (truncateText 修复)
+  frontend/src/pages/loading/index.scss        (排版间距优化)
+  frontend/src/pages/loading/index.tsx         (阶段自动推进 + 消息轮换)
+  frontend/src/pages/result/index.scss         (移除 padding-right/margin-right hack)
+  frontend/src/services/api.ts                 (可配置 API base + 交错进度事件)
+  frontend/src/stores/quizStore.ts             (knowledge_input 支持)
+  frontend/src/types/quiz.ts                   (类型扩展)
+```
+
+---
+
 ## v1.4.2 — 卡片标题显示原始输入 + 答题页滚动恢复 + 首页显示修复
 
 **发布日期：** 2026-06-12  

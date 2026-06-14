@@ -412,14 +412,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 2px 0;
 }
 
 .result-reward-val {
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--black);
-  min-width: 120px;
+  line-height: 32px;        /* match icon height for vertical centering */
 }
 
 .result-reward-exp-icon {
@@ -432,6 +433,28 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* CSS gold coin icon (copied from mine/index.scss for result page use) */
+.mine-coin-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--black);
+  background: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-comic-sm);
+  flex-shrink: 0;
+}
+
+.coin-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--yellow-dark);
+  border: 2px solid var(--black);
 }
 
 .result-reward-bonus {

@@ -5,9 +5,9 @@
  * All SVG icons replaced with emoji for WeChat Mini Program compatibility.
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, Textarea } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import Mascot from "../../components/Mascot";
 import { useUserStore } from "../../stores/userStore";
 import { userApi } from "../../services/api";
@@ -20,8 +20,8 @@ export default function IndexPage() {
   const [recentSessions, setRecentSessions] = useState<HistoryItem[]>([]);
   const isLoggedIn = useUserStore((s) => s.isLoggedIn);
 
-  // Fetch real streak days + recent sessions on mount (if logged in)
-  useEffect(() => {
+  // Fetch streak days + recent sessions on page show (including return from login)
+  const fetchPageData = useCallback(() => {
     if (isLoggedIn()) {
       userApi.getStats().then((res) => {
         if (res.code === 0 && res.data) {
@@ -33,8 +33,17 @@ export default function IndexPage() {
           setRecentSessions(res.data.items || []);
         }
       });
+    } else {
+      // Reset data when not logged in
+      setStreakDays(0);
+      setRecentSessions([]);
     }
   }, []);
+
+  // useDidShow fires on first mount AND when returning from login / other pages
+  useDidShow(() => {
+    fetchPageData();
+  });
 
   const formatDate = (dateStr: string) => {
     try {

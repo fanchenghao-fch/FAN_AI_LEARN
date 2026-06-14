@@ -111,6 +111,7 @@ export interface QuizGenerateRequest {
   question_count?: number;
   difficulty?: "easy" | "medium" | "hard" | "auto";
   question_types?: string[];
+  /** Enable web search for knowledge enrichment (default: true). */
   enable_search?: boolean;
 }
 
@@ -132,17 +133,28 @@ export interface APIResponse<T = unknown> {
 
 // ── SSE Event Types ───────────────────────────────────────
 
+/** 3-phase quiz generation progress event. */
 export interface SSEProgressEvent {
-  stage: string;
+  stage: "searching" | "generating" | "validating";
   message: string;
+  /** Phase-level status: pending → active → done (or error). */
+  status?: "pending" | "active" | "done" | "error";
 }
 
+/** Result payload from quiz generation. */
 export interface SSEGenerateResult {
   quiz_id: string;
   title: string;
   knowledge_domain: string;
   questions: Question[];
+  /** Answer-correctness validation. */
   validation: ValidationResult;
+  /** Domain-relevance validation (new in v1.5). */
+  domain_validation?: ValidationResult;
+  /** Search status: "success" | "timeout" | "disabled" | "error". */
+  search_status?: string;
+  /** Which backend performed the search. */
+  search_method?: "tavily_search" | "tavily_extract" | "deepseek_native" | "firecrawl" | "none";
 }
 
 export interface SSEDoneEvent {

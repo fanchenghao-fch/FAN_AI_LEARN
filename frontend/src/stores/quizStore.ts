@@ -20,7 +20,10 @@ interface QuizState {
   session: QuizSession;
 
   // Generation state
+  /** Latest progress event (backward-compatible). */
   generationProgress: SSEProgressEvent | null;
+  /** Multi-stage progress tracking — maps stage → latest event. */
+  stageProgress: Partial<Record<SSEProgressEvent["stage"], SSEProgressEvent>>;
   generationError: string | null;
 
   // Current question feedback
@@ -87,6 +90,7 @@ export const useQuizStore = create<QuizState & QuizActions>((set, get) => ({
   // Initial state
   session: { ...initialSession },
   generationProgress: null,
+  stageProgress: {},
   generationError: null,
   lastAnswerCorrect: null,
   showExplanation: false,
@@ -122,6 +126,7 @@ export const useQuizStore = create<QuizState & QuizActions>((set, get) => ({
     set({
       session: { ...initialSession },
       generationProgress: null,
+      stageProgress: {},
       generationError: null,
       lastAnswerCorrect: null,
       showExplanation: false,
@@ -197,7 +202,19 @@ export const useQuizStore = create<QuizState & QuizActions>((set, get) => ({
 
   // ── Generation ───────────────────────────────────────
 
-  setGenerationProgress: (progress) => set({ generationProgress: progress }),
+  setGenerationProgress: (progress) => {
+    if (progress) {
+      set((state) => ({
+        generationProgress: progress,
+        stageProgress: {
+          ...state.stageProgress,
+          [progress.stage]: progress,
+        },
+      }));
+    } else {
+      set({ generationProgress: null });
+    }
+  },
   setGenerationError: (error) => set({ generationError: error }),
 
   // ── Result ───────────────────────────────────────────
