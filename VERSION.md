@@ -1,13 +1,79 @@
 # 阿拉灯神丁 — 版本说明
 
-## v1.4.3 — 卡片居中修复 + Loading 进度感知 + WXSS 布局重构
+## v1.4.3 — 联网搜索优化 + 卡片居中修复 + Loading 进度感知
 
 **发布日期：** 2026-06-14  
 **平台：** 微信小程序
 
 ---
 
-### 一、Bug 修复（4 项手动测试问题）
+### 一、重大新增：联网搜索优化（OpenSpec: optimize-ai-quiz-generation）
+
+AI 大模型训练数据有时效限制，当用户输入的知识点超出模型训练数据范围（如最新技术概念、小众专业术语），DeepSeek 可能产出错误题目。v1.4.3 在出题流程中引入**三段式流水线架构**：联网搜索 → 题目生成 → 领域校验。
+
+#### 1.1 知识联网搜索链（Knowledge Enrichment Chain）
+
+**5 实例多工具策略**：不给 AI 暴露可变参数，而是预实例化 5 个参数固化的工具变体，AI 仅需从工具列表中选择最合适的一个——将"调参"问题转化为"选工具"问题。
+
+| 工具名 | 类型 | 固化参数 | AI 选择依据 |
+|--------|------|---------|-----------|
+| `search_quick` | TavilySearch | `max_results=3`, `search_depth="basic"` | 常见/基础知识（如 "Python 变量"） |
+| `search_deep` | TavilySearch | `max_results=5`, `search_depth="advanced"` | 专业/小众/新兴知识（如 "Harness Engineering"） |
+| `search_fresh` | TavilySearch | `max_results=5`, `advanced` + `time_range="month"` | 有时效性要求（如 "2026 AI 趋势"） |
+| `extract_basic` | TavilyExtract | `extract_depth="basic"` | 普通网页 URL（新闻、博客） |
+| `extract_deep` | TavilyExtract | `extract_depth="advanced"` | 技术文档/论文 URL |
+
+**降级链**（优先级）：
+1. **首选**：Tavily 5 实例（`langchain-tavily`，需 `TAVILY_API_KEY`）
+2. **备选 1**：DeepSeek V4 Pro tool calling 原生搜索
+3. **备选 2**：Firecrawl MCP
+
+**容错设计**：
+- 8 秒硬超时（`asyncio.wait_for`）
+- 搜索失败/超时/空结果 → 静默降级，使用原始输入继续出题
+- 降级不影响 API 响应 code（始终返回 code=0）
+
+#### 1.2 知识领域归属校验链（Domain Validation Chain）
+
+- 出题后由 DeepSeek V4 Flash（`temperature=0.1`）验证每道题目是否属于用户指定的知识领域
+- 输出 `ValidationResult`：`valid: bool` + `issues: list[{question_id, problem}]`
+- 校验失败**不阻断**题目返回，仅标记问题供前端展示
+- Flash 模型 API 错误时返回 `valid: false` + `issues: [{problem: "校验服务异常"}]`
+
+#### 1.3 三段式出题流水线
+
+```
+用户输入
+  │
+  ├─ [Phase 1: 知识搜索]  ← 🆕 联网获取最新知识
+  │   5 个预实例化工具，AI 语义匹配选择
+  │   超时 8s，失败静默降级
+  │
+  ├─ [Phase 2: 题目生成]  ← 现有逻辑
+  │   DeepSeek V4 Pro
+  │   输入：enriched_knowledge（或原始输入，若搜索降级）
+  │
+  ├─ [Phase 3: 领域校验]  ← 🆕 验证题目领域归属
+  │   DeepSeek V4 Flash (temperature=0.1)
+  │   校验失败不阻断
+  │
+  └─ Response: quiz + search_status + search_method + validation_result
+```
+
+#### 1.4 前端集成
+
+- `enable_search` 默认值从 `false` 改为 `true`（用户可手动关闭）
+- Loading 页展示搜索→生成→校验三段式进度，每阶段独立状态图标（spinner / ✓ / ⚠️）
+- API 响应新增 `search_status`（`success`/`timeout`/`disabled`/`error`）、`search_method`（`tavily_search`/`tavily_extract`/`deepseek`/`firecrawl`）、`validation_result` 字段
+- 当 `enable_search=false` 时自动跳过搜索阶段，直接进入生成
+
+#### 1.5 新增依赖与配置
+
+- 新增 `langchain-tavily` 包（`TavilySearch` + `TavilyExtract`）
+- 需在 `.env` 中配置 `TAVILY_API_KEY`
+- 新增配置项：`SEARCH_TIMEOUT_SECONDS=8`、`SEARCH_MAX_CHARS=3000`、`VALIDATION_MAX_TOKENS=2048`
+
+### 二、Bug 修复（4 项手动测试问题）
 
 | # | 问题 | 根因 | 修复 |
 |---|------|------|------|
@@ -16,41 +82,41 @@
 | 3 | 答题总结页卡片未居中（偏左）且显示不完整 | 同上根因：`.result-page` 的 `padding-right: 4px` 覆盖 + 4 处 `margin-right` 溢出 | 移除 `.result-page` 的 `padding-right` 覆盖；移除 `.knowledge-point`/`.wrong-review-item`/`.study-suggestion-card` 的 `margin-right`；移除 2 处按钮 inline `marginRight` |
 | 4 | 个人中心/学习历史/错题本/关于页面卡片显示不完整 | 同根因：页面类 `padding-right: 4px` 覆盖 `.app-phone-content` 的 `padding-right: 22px`；`.comic-card`/`.speech-bubble` 的 `margin-right` + flex stretch 导致溢出 | 全局移除 4 个页面类的 `padding-right` 覆盖；移除 `.comic-card` 和 `.speech-bubble` 的 `margin-right`；移除 `.mine-login-btn`/`.mine-logout-btn`/`.mine-stat-item` 的 `margin-right` |
 
-### 二、Loading 页面增强
+### 三、Loading 页面增强
 
-#### 2.1 进度阶段自动推进
+#### 3.1 进度阶段自动推进
 - 搜索阶段 6 秒后自动标记完成并进入生成阶段（避免漫长等待期间 UI 卡在"搜索"）
 - 生成阶段消息轮换：每 4 秒切换提示文字（"正在分析知识点结构..." → "正在设计题目难度梯度..." → "正在构思有趣的题目..." → "灯灯正在奋笔疾书中..."）
 
-#### 2.2 排版优化
+#### 3.2 排版优化
 - `.loading-step` 左侧 padding 从 0 增至 12px，圆形图标不再紧贴左侧彩色边框
 
-### 三、WXSS 布局架构修正
+### 四、WXSS 布局架构修正
 
-#### 3.1 核心问题：CSS 类名冲突
+#### 4.1 核心问题：CSS 类名冲突
 所有页面统一样式模式：`.app-phone-content`（全局 padding: 22px）+ 页面专属类共存在同一个 `<ScrollView>` 元素上。页面类的 `padding-right: 4px` 因 CSS 层叠覆盖了全局 22px，导致右侧有效空间从 22px 骤降至 4px。
 
-#### 3.2 二次问题：margin-right + flex stretch 溢出
+#### 4.2 二次问题：margin-right + flex stretch 溢出
 Flex 列容器中，子元素默认 `align-items: stretch` 填满宽度。添加 `margin-right: Npx` 后，元素总宽度 = 容器宽度 + Npx → 溢出裁剪。
 
-#### 3.3 修正方案
+#### 4.3 修正方案
 - 全局阴影空间由 `.app-phone-content` 的 `padding: 32px 22px 20px` 统一提供（比原始 18px 多 4px）
 - 页面类不再覆盖 padding；卡片/按钮不再添加 margin-right
 - 确认编译产物中无 `calc()` 和 `overflow-x: visible`（WXSS 不兼容）
 
-### 四、向后兼容性保障
+### 五、向后兼容性保障
 
 - **API 基础地址可配置**：`api.ts` 新增 `setApiBase()` / `getCurrentApiBase()`，前端启动时检测后端连通性
 - **后端启动脚本**：`backend/start.sh` 自动检测 poetry/pip 环境，兼容两种安装方式
 - **出题防幻觉约束**：提示词增加"禁止引用外部材料"和"无幻觉材料"规则
 
-### 五、文件变更统计
+### 六、文件变更统计
 
 | 类别 | 新增 | 修改 | 合计 |
 |------|------|------|------|
-| 后端 | 4 | 6 | 10 |
+| 后端 | 6 | 6 | 12 |
 | 前端 | 0 | 9 | 9 |
-| **合计** | **4** | **15** | **19** |
+| **合计** | **6** | **15** | **21** |
 
 ```
 后端新增:
